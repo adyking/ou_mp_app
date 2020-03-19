@@ -27,6 +27,7 @@ class Home extends StatelessWidget {
                  TodayPanels(),
                   AllItemsPanel(),
 
+
                ],
              ),
            ),
