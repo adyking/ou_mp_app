@@ -26,8 +26,6 @@ class Home extends StatelessWidget {
                  ProjectsProgress(),
                  TodayPanels(),
                   AllItemsPanel(),
-
-
                ],
              ),
            ),
