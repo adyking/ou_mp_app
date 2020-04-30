@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/screens/tasks/task_add.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
@@ -289,7 +290,7 @@ Widget _floatingButton(context) {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+                    MaterialPageRoute(builder: (context) => TaskPageAdd()),);
                 }
             ),
 
