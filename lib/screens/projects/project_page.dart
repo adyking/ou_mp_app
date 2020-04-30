@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/style.dart';
 
@@ -12,6 +13,18 @@ class ProjectPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Projects', style: AppBarTheme.of(context).textTheme.title,),
         backgroundColor: AppBarBackgroundColor,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+            },
+          ),
+
+
+        ],
         centerTitle: true,
       ),
       backgroundColor: Colors.grey[200],
@@ -36,6 +49,8 @@ class ProjectPage extends StatelessWidget {
         ],
 
       ),
+
+
     );
   }
 
@@ -47,8 +62,6 @@ Widget _myListView(BuildContext context) {
   final titles = ['TM470 Project'];
 
   final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),];
-
-
 
   return ListView.builder(
     itemCount: titles.length,

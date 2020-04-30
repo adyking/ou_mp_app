@@ -1,86 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:ou_mp_app/screens/projects/project_add.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 
 class ProjectPDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  final _projectTitle = 'TM470 Project';
+  final _projectDesc = 'Mobile app to manage OU projects.';
+  final _category = 'Development';
+  final _dateFromTo = 'Feb 08, 2020 - Sept 14, 2020';
+  final double _currentProgress = 0.25;
+  final  _calProgress = _currentProgress * 100;
+  final _progress = _calProgress.toInt();
+  final _name = 'Adilson Jacinto';
 
-
-
-    final makeProjectDetail = Container(
-      color: Colors.white,
+    final makeProjectDetailHeader = Container(
+      color: DefaultThemeColor,
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment:  CrossAxisAlignment.stretch,
-
           children: <Widget>[
 
             CircularPercentIndicator(
-              radius: 100.0,
+              radius: 75.0,
               lineWidth: 5.0,
-              percent: 0.25,
-              center: new Text("25%"),
-              progressColor: DefaultThemeColor,
+              percent: _currentProgress,
+              center: new Text( _progress.toString()+"%", style: TextStyle(
+                color: Colors.white,
+              ),),
+              progressColor: Colors.green,
             ),
-            SizedBox(height: 20.0,),
-            Column(
-              children: <Widget>[
-                TextField(
-                 enabled: false,
-                  decoration: InputDecoration(
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: DefaultThemeColor),
-                    ),
-                    //icon: Icon(Icons.edit),
-                    labelStyle: TextStyle(
-                    ),
-                    labelText: 'Project name',
-                  ),
-                )
-              ],
-             ),
-        /*    Row(
-              children: <Widget>[
-                Text('Project name:'),
-                SizedBox(width: 10.0,),
-                Text('TM470 Project')
+            SizedBox(height: 5.0,),
+            Text(_projectTitle, style: TextStyle(
+                fontSize: 18.0, color: Colors.white, fontWeight: FontWeight.w600
+            ),),
+            SizedBox(height: 10.0,),
+            Text(_projectDesc, style: TextStyle(
+                fontSize: 16.0, color: Colors.white,
+            ),),
 
-              ],
-            ),
-            Row(
-
-              children: <Widget>[
-
-
-                Text('Description:'),
-                SizedBox(width: 24.0,),
-                Wrap(
-
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                    direction: Axis.vertical,
-                    children: <Widget>[
-                      Text('OU Project Management App xxxxxxxxxxxxxxxxxxxxxxx')
-                    ],
-
-                )
-              ],
-            ),
-            Row(
-              children: <Widget>[
-                Text('Category:'),
-                SizedBox(width: 44.0,),
-                Text('Development')
-              ],
-            ),
-*/
-
-
-            Text('08/02/2020 - 14/09/2020'),
           ],
 
 
@@ -89,13 +53,76 @@ class ProjectPDetails extends StatelessWidget {
 
     );
 
+  final makeProjectDetailBody = Container(
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment:  CrossAxisAlignment.stretch,
+        children: <Widget>[
+
+         Row(
+           children: <Widget>[
+             Icon(Icons.category, color: Colors.grey
+             ),
+             SizedBox(width: 10.0,),
+             Text(_category,),
+           ],
+         ),
+          SizedBox(height: 10.0,),
+          Row(
+            children: <Widget>[
+              Icon(Icons.date_range, color: Colors.grey
+              ),
+              SizedBox(width: 10.0,),
+              Text(_dateFromTo,),
+            ],
+          ),
+          SizedBox(height: 10.0,),
+          Row(
+            children: <Widget>[
+              Icon(Icons.assignment_ind, color: Colors.grey
+              ),
+              SizedBox(width: 10.0,),
+              Text(_name,),
+            ],
+          ),
+
+        ],
+
+
+      ),
+    ),
+
+  );
+
+
+  final makeTasksTitle = Container(
+
+    child: Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment:  CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text('Tasks', style: PanelTitleTextStyle,),
+
+
+        ],
+
+
+      ),
+    ),
+
+  );
 
 
 
 
-    return Scaffold(
+  return Scaffold(
       appBar: AppBar(
-        title: Text('TM470 Project', style: AppBarTheme.of(context).textTheme.title,),
+        title: Text('', style: AppBarTheme.of(context).textTheme.title,),
         backgroundColor: AppBarBackgroundColor,
         centerTitle: true,
 
@@ -123,12 +150,13 @@ class ProjectPDetails extends StatelessWidget {
               child: Column(
                 children: <Widget>[
 
-                  makeProjectDetail,
+                  makeProjectDetailHeader,
+                  makeProjectDetailBody,
+                  makeTasksTitle,
 
-                  Container(
-                    height: 200.0,
-                    child: _myListView(context) ,
-                  ),
+               _myListView(context) ,
+                  SizedBox(height: 50.0,),
+
 
                 ],
               ),
@@ -138,6 +166,8 @@ class ProjectPDetails extends StatelessWidget {
         ],
 
       ),
+
+      floatingActionButton:  _floatingButton(context),
     );
   }
 
@@ -146,35 +176,124 @@ class ProjectPDetails extends StatelessWidget {
 
 Widget _myListView(BuildContext context) {
 
-  final titles = ['TM470 Project'];
+  final tasks = ['Read module material', 'Write up on topic'];
+  final tasksStartDate = ['Feb 09', 'Feb 12'];
 
   final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),];
 
+  final double hTasks = tasks.length.toDouble() * 80;
 
 
-  return ListView.builder(
-    itemCount: titles.length,
-    itemBuilder: (context, index) {
+  return Container(
 
-      return Card( //                           <-- Card widget
-        child: Container(
-          color: Colors.white,
-          child: ListTileTheme(
+    height: hTasks,
+    child: ListView.builder(
 
-            child: ListTile(
-              // isThreeLine: true,
-              subtitle: Text('Development\n08/02/2020 - 14/09/2020',
-                style: TextStyle(fontSize: 14.0),
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+
+        return Card(
+
+            color: Colors.white,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color:  Color(0xff326fb4),
+                    width: 5.0,
+                  ),
+
+                ),
               ),
-              onTap: () => print('sdsd'),
-              // leading: icons[index],
-              title: Text(titles[index]),
-              trailing: Icon(Icons.keyboard_arrow_right)
-              ,
+              child: ListTileTheme(
+
+                child: ListTile(
+                  // isThreeLine: true,
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text('Completed',
+                        style: TextStyle(fontSize: 14.0),
+                      ),
+
+
+                      Text('0%',
+                          style: TextStyle(fontSize: 14.0),
+                        ),
+
+                    ],
+                  ),
+                  onTap: () => print(hTasks.toString()),
+                  // leading: Container(width: 10, color: Colors.red,),
+
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(tasks[index]
+                      ),
+
+                      Text(tasksStartDate[index],
+                      ),
+
+                    ],
+                  ),
+             //     trailing: Icon(Icons.keyboard_arrow_right),
+                ),
+              ),
             ),
-          ),
-        ),
-      );
-    },
+
+        );
+      },
+    ),
   );
+
+
+
+}
+
+Widget _floatingButton(context) {
+
+        return SpeedDial(
+          child: Icon(Icons.add),
+          backgroundColor: Color(0xff326fb4),
+          overlayColor: Colors.grey,
+
+          tooltip: 'More options',
+          animatedIcon: AnimatedIcons.menu_close,
+          children: [
+            SpeedDialChild(
+                labelBackgroundColor: Color(0xff326fb4),
+
+                backgroundColor: Color(0xff326fb4),
+                foregroundColor: Colors.white,
+
+                labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
+                child: Icon(Icons.event_note),
+                label: 'Create a log sheet',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+                }
+
+            ),
+            SpeedDialChild(
+                labelBackgroundColor: Color(0xff326fb4),
+                backgroundColor: Color(0xff326fb4),
+                //foregroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
+                child: Icon(Icons.assignment),
+                // labelWidget: Text('Auto Join', style: TextStyle(color: Colors.white),),
+                label: 'Add new task',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+                }
+            ),
+
+          ],
+        );
+
 }

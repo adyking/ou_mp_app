@@ -55,7 +55,7 @@ Widget _myListView(BuildContext context) {
   final titles = ['All Tasks', 'Log Sheets', 'Overdue Tasks'];
 
   final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),
-    Icon(Icons.list,color: Color(0xff326fb4)),
+    Icon(Icons.event_note,color: Color(0xff326fb4)),
     Icon(Icons.assignment_late,color: Color(0xff326fb4))];
 
 

@@ -92,7 +92,7 @@ class MainScreenState extends State<MainScreen>{
           ),
         ],
       ),
-     floatingActionButton: _floatingButton(context),
+   //  floatingActionButton: _floatingButton(context),
     ),
   );
 
@@ -105,8 +105,6 @@ class MainScreenState extends State<MainScreen>{
         {
           return FloatingActionButton(
             onPressed: () {
-
-
 
               Navigator.push(
                   context,
