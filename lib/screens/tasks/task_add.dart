@@ -22,7 +22,10 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
 
   final taskNameController = TextEditingController();
-
+  final startDateController = TextEditingController();
+  final endDateController = TextEditingController();
+  final estimatedTimeController = TextEditingController();
+  final durationController = TextEditingController();
 
   bool isTaskNameEmpty = false;
 
@@ -111,6 +114,38 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
 
+    final makeEstimatedTimeField = TextField(
+       controller: estimatedTimeController,
+
+      decoration: InputDecoration(
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: DefaultThemeColor),
+        ),
+
+        labelStyle: TextStyle(
+          color: _setColorFocusDesc(),
+        ),
+        labelText: 'Estimate time (hours)',
+      ),
+    );
+
+
+    final makeDurationField = TextField(
+      controller: durationController,
+      readOnly: true,
+      enabled: false,
+      decoration: InputDecoration(
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: DefaultThemeColor),
+        ),
+
+        labelStyle: TextStyle(
+          color: _setColorFocusDesc(),
+        ),
+        labelText: 'Duration',
+      ),
+    );
+
     final makeDDType = FormBuilderDropdown(
       attribute: "category",
       decoration: InputDecoration(labelText: "Category"
@@ -140,7 +175,9 @@ class TaskPageAddState extends State<TaskPageAdd> {
         ),
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Text('$userHelpText'),
+          child: Text('$userHelpText', style: TextStyle( color: Colors.red
+
+          ),),
         ),
 
 
@@ -151,7 +188,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
 
     final makeStartDate = FormBuilderDateTimePicker(
-
+      controller: startDateController,
       attribute: "date",
       inputType: InputType.date,
       initialValue: DateTime.now(),
@@ -161,7 +198,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
-
+       controller: endDateController,
       attribute: "date",
       inputType: InputType.date,
       initialValue: DateTime.now(),
@@ -194,6 +231,57 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
     }
 
+
+    bool checkFields() {
+      bool errors = false;
+      setState(() {
+
+
+        if (taskNameController.text == ''){
+          //txtFieldFocus.requestFocus();
+          errors = true;
+          userHelpText = userHelpText + 'Task name field is required.\n\n';
+        }
+
+        if (startDateController.text == ''){
+          errors = true;
+          userHelpText = userHelpText + 'Start date field is required.\n\n';
+        }
+
+        if (endDateController.text == ''){
+          errors = true;
+          userHelpText = userHelpText + 'End date field is required.\n\n';
+        }
+
+        if (estimatedTimeController.text == ''){
+          errors = true;
+          userHelpText = userHelpText + 'Estimated time field is required.\n\n';
+        }
+
+        if (startDateController.text != '' && endDateController.text != '' ){
+            DateTime str = new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0){
+              errors = true;
+              userHelpText = userHelpText + 'End date cannot be before start date.\n\n';
+            } else {
+
+              durationController.text = diffDays.toString() + ' days';
+
+            }
+
+        }
+
+
+
+
+      });
+      return errors;
+    }
+
     return Scaffold(
 
       appBar: AppBar(
@@ -205,19 +293,23 @@ class TaskPageAddState extends State<TaskPageAdd> {
           IconButton(
             icon: Icon(Icons.check),
             onPressed: () {
-              if (taskNameController.text == ''){
-                txtFieldFocus.requestFocus();
-                userHelpText = 'assdsd';
-              } else {
+              userHelpText = '';
+              bool errors = false;
+              errors = checkFields();
+
+
+              if (errors==false){
                 createTask();
+              } else {
+
               }
+
 
             },
           ),
         ],
       ),
       backgroundColor: Colors.grey[200],
-
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -237,6 +329,8 @@ class TaskPageAddState extends State<TaskPageAdd> {
                             makeTaskField,
                             makeStartDate,
                             makeEndDate,
+                            makeDurationField,
+                            makeEstimatedTimeField,
                             SizedBox(height: 30.0,),
                             Row(
                               children: <Widget>[
@@ -247,8 +341,11 @@ class TaskPageAddState extends State<TaskPageAdd> {
                         ),
                       ),
                     ),
+                  Visibility(
+                    child: makeUserhelp,
+                    visible: userHelpText == null ? false : true,
+                  ),
 
-                   makeUserhelp,
                   ],
                 ),
 
