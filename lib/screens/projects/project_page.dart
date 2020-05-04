@@ -61,7 +61,7 @@ Widget _myListView(BuildContext context) {
 
   final titles = ['TM470 Project'];
 
-  final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),];
+
 
   return ListView.builder(
     itemCount: titles.length,
@@ -80,7 +80,7 @@ Widget _myListView(BuildContext context) {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProjectPDetails()),);
+                  MaterialPageRoute(builder: (context) => ProjectDetails()),);
               },
              // leading: icons[index],
               title: Text(titles[index]),

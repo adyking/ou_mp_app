@@ -6,7 +6,7 @@ import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 
-class ProjectPDetails extends StatelessWidget {
+class ProjectDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +180,7 @@ Widget _myListView(BuildContext context) {
   final tasks = ['Read module material', 'Write up on topic'];
   final tasksStartDate = ['Feb 09', 'Feb 12'];
 
-  final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),];
+
 
   final double hTasks = tasks.length.toDouble() * 80;
 
