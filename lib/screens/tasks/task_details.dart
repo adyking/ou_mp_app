@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
-
-import 'package:ou_mp_app/screens/tasks/task_add.dart';
+import 'package:ou_mp_app/screens/subtasks/subtask_add.dart';
+import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
+import 'package:ou_mp_app/screens/tasks/task_edit.dart';
 import 'package:ou_mp_app/style.dart';
-
-import 'package:ou_mp_app/screens/projects/project_add.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 
 class TaskDetails extends StatefulWidget{
+  final int id;
 
-  TaskDetailsState  createState() => TaskDetailsState();
+
+  TaskDetails({Key key, this.id}) : super(key : key);
+
+  TaskDetailsState  createState() => TaskDetailsState(id: id);
 }
 
 class TaskDetailsState extends State<TaskDetails> {
+  final int id;
+
+  TaskDetailsState({Key key, this.id});
+
   bool completed = false;
 
   @override
@@ -24,8 +30,6 @@ class TaskDetailsState extends State<TaskDetails> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
 
     super.dispose();
   }
@@ -42,7 +46,6 @@ class TaskDetailsState extends State<TaskDetails> {
     final double _currentProgress = 0.15;
     final  _calProgress = _currentProgress * 100;
     final _progress = _calProgress.toInt();
-
 
 
 
@@ -194,6 +197,10 @@ class TaskDetailsState extends State<TaskDetails> {
           IconButton(
             icon: Icon(Icons.mode_edit),
             onPressed: () {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TaskPageEdit()),);
             },
           ),
           IconButton(
@@ -264,6 +271,7 @@ Widget _subtasksListView(BuildContext context) {
 
     return c;
   }
+  final subtasksId = [1, 2];
   final subtasks = ['Choose topic', 'Research on chosen topic'];
   final subtasksStartDate = ['Feb 09', 'Feb 10'];
   final subtasksEstimatedTime = ['2 hours', '2 hours'];
@@ -312,7 +320,11 @@ Widget _subtasksListView(BuildContext context) {
 
                   ],
                 ),
-                onTap: () => print(hTasks.toString()),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SubtaskDetails(id:subtasksId[index])),);
+                },
                 // leading: Container(width: 10, color: Colors.red,),
 
                 title: Row(
@@ -342,45 +354,16 @@ Widget _subtasksListView(BuildContext context) {
 
 Widget _floatingButton(context) {
 
-  return SpeedDial(
+  return FloatingActionButton(
+    onPressed: () {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SubTaskPageAdd()),);
+
+    },
     child: Icon(Icons.add),
     backgroundColor: Color(0xff326fb4),
-    overlayColor: Colors.grey,
-
-    tooltip: 'More options',
-    animatedIcon: AnimatedIcons.menu_close,
-    children: [
-      SpeedDialChild(
-          labelBackgroundColor: Color(0xff326fb4),
-          backgroundColor: Color(0xff326fb4),
-          foregroundColor: Colors.white,
-          labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
-          child: Icon(Icons.event_note),
-          label: 'Create a log sheet',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
-          }
-
-      ),
-      SpeedDialChild(
-          labelBackgroundColor: Color(0xff326fb4),
-          backgroundColor: Color(0xff326fb4),
-          //foregroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
-          child: Icon(Icons.assignment),
-          // labelWidget: Text('Auto Join', style: TextStyle(color: Colors.white),),
-          label: 'Add new task',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TaskPageAdd()),);
-          }
-      ),
-
-    ],
   );
 
 }

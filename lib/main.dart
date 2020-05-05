@@ -7,14 +7,11 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: MainScreen(),
+        home: MainScreen(tabIndex: 0,),
         theme: ThemeData(
           appBarTheme: AppBarTheme(textTheme: TextTheme(title: AppBarTextStyle)),
           textTheme: TextTheme(

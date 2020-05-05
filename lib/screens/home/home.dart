@@ -10,6 +10,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Dashboard', style: AppBarTheme.of(context).textTheme.title,),
         backgroundColor: AppBarBackgroundColor,
         centerTitle: true,

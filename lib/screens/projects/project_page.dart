@@ -9,48 +9,52 @@ class ProjectPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Projects', style: AppBarTheme.of(context).textTheme.title,),
-        backgroundColor: AppBarBackgroundColor,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
-            },
-          ),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text('Projects', style: AppBarTheme.of(context).textTheme.title,),
+          backgroundColor: AppBarBackgroundColor,
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+              },
+            ),
 
 
-        ],
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.grey[200],
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    height: 200.0,
-                    child: _myListView(context) ,
-                  ),
+          ],
+          centerTitle: true,
+        ),
+        backgroundColor: Colors.grey[200],
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      height: 200.0,
+                      child: _myListView(context) ,
+                    ),
 
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-        ],
+          ],
+
+        ),
+
 
       ),
-
-
     );
   }
 

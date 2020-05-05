@@ -7,16 +7,22 @@ import 'screens/home/home.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MainScreen extends StatefulWidget {
+  final int tabIndex;
+
+  MainScreen({Key key, this.tabIndex}) : super(key:key);
 
   @override
-  MainScreenState createState() => MainScreenState();
+  MainScreenState createState() => MainScreenState(selectedScreen:tabIndex);
 
 }
 
 class MainScreenState extends State<MainScreen>{
-  int _selectedScreen = 0;
+  int selectedScreen;
   final colorActive = BottomBarColorActive;
   final colorInactive = BottomBarColorInactive;
+
+  MainScreenState({Key ke, this.selectedScreen});
+
 
 @override
   Widget build(BuildContext context) {
@@ -32,62 +38,62 @@ class MainScreenState extends State<MainScreen>{
     onWillPop: () async => false,
     child: Scaffold(
 
-      body: _screenOption[_selectedScreen],
+      body: _screenOption[selectedScreen],
 
       backgroundColor: Colors.grey[200],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        currentIndex: _selectedScreen,
+        currentIndex: selectedScreen,
         onTap: (int index) {
           setState(() {
-            _selectedScreen = index;
+            selectedScreen = index;
           });
         },
         items: [
           BottomNavigationBarItem(
             icon: Icon(
               Icons.dashboard,
-              color: _selectedScreen == 0 ? colorActive : colorInactive,
+              color: selectedScreen == 0 ? colorActive : colorInactive,
             ),
             title: Text(
               'Dashboard',
               style: TextStyle(
-                  color: _selectedScreen == 0 ? colorActive : colorInactive),
+                  color: selectedScreen == 0 ? colorActive : colorInactive),
             ),
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.border_color,
-              color: _selectedScreen == 1 ? colorActive : colorInactive,
+              color: selectedScreen == 1 ? colorActive : colorInactive,
             ),
             title: Text(
               'Projects',
               style: TextStyle(
-                  color: _selectedScreen == 1 ? colorActive : colorInactive),
+                  color: selectedScreen == 1 ? colorActive : colorInactive),
             ),
           ),
 
           BottomNavigationBarItem(
             icon: Icon(
               Icons.calendar_today,
-              color: _selectedScreen == 2 ? colorActive : colorInactive,
+              color: selectedScreen == 2 ? colorActive : colorInactive,
             ),
             title: Text(
               'Agenda',
               style: TextStyle(
-                  color: _selectedScreen == 2 ? colorActive : colorInactive),
+                  color: selectedScreen == 2 ? colorActive : colorInactive),
             ),
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.settings,
-              color: _selectedScreen == 3 ? colorActive : colorInactive,
+              color: selectedScreen == 3 ? colorActive : colorInactive,
             ),
             title: Text(
               'Settings',
               style: TextStyle(
-                  color: _selectedScreen == 3 ? colorActive : colorInactive),
+                  color: selectedScreen == 3 ? colorActive : colorInactive),
             ),
           ),
         ],
@@ -100,7 +106,7 @@ class MainScreenState extends State<MainScreen>{
   }
 
   Widget _floatingButton(BuildContext context) {
-    switch (_selectedScreen) {
+    switch (selectedScreen) {
       case 1:
         {
           return FloatingActionButton(

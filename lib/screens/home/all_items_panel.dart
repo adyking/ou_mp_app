@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:ou_mp_app/style.dart';
 
@@ -70,7 +71,33 @@ Widget _myListView(BuildContext context) {
           child: ListTileTheme(
             selectedColor: Colors.red,
             child: ListTile(
-            onTap: () => print('sdsd'),
+            onTap: () {
+              switch (index) {
+                case 0:
+                  {
+
+                  }
+                  break;
+                case 1:
+                  {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LogSheetPage()),);
+                  }
+                  break;
+                case 2:
+                  {
+
+                  }
+                  break;
+
+                default:
+                  {
+
+                  }
+              }
+
+            },
               leading: icons[index],
               title: Text(titles[index]),
               trailing: index == 2 ?   Text('6+') :
