@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_add.dart';
+import 'package:ou_mp_app/screens/logsheets/logsheet_details.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_add.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
 import 'package:ou_mp_app/screens/tasks/task_edit.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+
+import '../../main_screen.dart';
 
 
 class LogSheetPage extends StatefulWidget{
@@ -61,16 +64,22 @@ class LogSheetPageState extends State<LogSheetPage> {
 
     );
 
-
-
-
     return Scaffold(
       appBar: AppBar(
+      /*  leading: new IconButton(
+          icon: new Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),
+            );
+          },
+        ),*/
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Log Sheets'),
-            Text(_projectTitle + ' | ' + _dateFromTo, style: TextStyle(
+            Text(_projectTitle, style: TextStyle(
               fontSize: 14.0,
             ),),
           ],
@@ -145,19 +154,30 @@ Widget _logSheetsListView(BuildContext context) {
     return c;
   }
   final logSheetId = [1, 2, 3];
-  final datecreated = ['Feb 09', 'Feb 10', 'Feb 12'];
+  final dateCreated = ['Feb 09', 'Feb 10', 'Feb 12'];
   final title = ['Sunday, 16:43', 'Monday, 18:34', 'Wednesday, 15:22'];
-  final work = ['Logging on to module website, reading through the various guides...', 'Logging on to module website, reading through the various guides...','Logging on to module website, reading through the various guides...'];
+  final work = ['Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.', 'Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.','Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.'];
 
 
- final double hLogSheets = logSheetId.length.toDouble() * 80;
+ //final double hLogSheets = logSheetId.length.toDouble() * 200;
+  // full screen width and height
+  double width = MediaQuery.of(context).size.width;
+  double height = MediaQuery.of(context).size.height;
 
+// height without SafeArea
+  var padding = MediaQuery.of(context).padding;
+  double height1 = height - padding.top - padding.bottom;
+
+// height without status bar
+  double height2 = height - padding.top;
+
+// height without status and toolbar
+  double height3 = height - padding.top - kToolbarHeight - 15;
 
   return Container(
-    width: MediaQuery.of(context).size.width,
-    height:MediaQuery.of(context).size.height,
 
-
+    height: height3 ,
+    
     //height: hLogSheets,
     child: ListView.builder(
 
@@ -173,7 +193,7 @@ Widget _logSheetsListView(BuildContext context) {
                 color: Colors.grey[200],
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Text(datecreated[index]),
+                  child: Text(dateCreated[index]),
                 ),
               ),
               Container(
@@ -182,9 +202,9 @@ Widget _logSheetsListView(BuildContext context) {
                     // isThreeLine: true,
                     subtitle: Text(work[index]),
                     onTap: () {
-                    //  Navigator.push(
-                     //   context,
-                    //    MaterialPageRoute(builder: (context) => SubtaskDetails(id:subtasksId[index])),);
+                      Navigator.push(
+                        context,
+                       MaterialPageRoute(builder: (context) => LogSheetDetails(id:logSheetId[index])),);
                     },
                     // leading: Container(width: 10, color: Colors.red,),
 

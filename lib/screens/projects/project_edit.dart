@@ -8,14 +8,14 @@ import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 
 
 
-class ProjectPageAdd extends StatefulWidget{
+class ProjectPageEdit extends StatefulWidget{
 
-  ProjectPageAddState  createState() => ProjectPageAddState();
+  ProjectPageEditState  createState() => ProjectPageEditState();
 }
 
-class ProjectPageAddState extends State<ProjectPageAdd> {
+class ProjectPageEditState extends State<ProjectPageEdit> {
 
-  String appBarTitle = 'New Project';
+  String appBarTitle = 'Edit Project';
   String sCategory;
   DateTime sStartDate;
   DateTime sEndDate;
@@ -40,6 +40,12 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
+
+    projectNameController.text = 'TM470 Project';
+    sCategory = 'Development';
+    projectDescController.text = 'Mobile app o manage OU projects';
+    sStartDate = new DateFormat("dd-MM-yyyy").parse('08-02-2020');
+    sEndDate = new DateFormat("dd-MM-yyyy").parse('14-09-2020');
 
   }
 
@@ -77,7 +83,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
   void changeTitle(String title){
     setState(() {
       if (title == ''){
-        appBarTitle = 'New Project';
+        appBarTitle = 'Edit Project';
         isProjectNameEmpty = true;
       } else {
         appBarTitle = title;
@@ -122,7 +128,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
       decoration: InputDecoration(labelText: "Category"
 
       ),
-      initialValue: 'Research',
+      initialValue: sCategory,
       hint: Text('Select category'),
       validators: [FormBuilderValidators.required()],
       items: ['Research', 'Development', 'Evaluation','Other']
@@ -193,7 +199,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
       controller: projectStartDateController,
       attribute: "date",
       inputType: InputType.date,
-      initialValue: DateTime.now(),
+      initialValue: sStartDate,
       format: DateFormat("dd-MM-yyyy"),
 
       decoration: InputDecoration(labelText: "Start date*"),
@@ -203,7 +209,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
       controller: projectEndDateController,
       attribute: "date",
       inputType: InputType.date,
-      initialValue: DateTime.now(),
+      initialValue: sEndDate,
       format: DateFormat("dd-MM-yyyy"),
 
       decoration: InputDecoration(labelText: "Completion date*"),
@@ -343,7 +349,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
       context: context,
       type: AlertType.success,
       title: "Sucess",
-      desc: "New project has been created sucessfully!",
+      desc: "Project has been updated sucessfully!",
       buttons: [
         DialogButton(
           child: Text(

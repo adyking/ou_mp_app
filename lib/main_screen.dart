@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/screens/agenda/agenda_page.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_page.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:ou_mp_app/screens/settings/settings_page.dart';
 import 'package:ou_mp_app/style.dart';
 import 'screens/home/home.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -31,6 +33,8 @@ class MainScreenState extends State<MainScreen>{
   final _screenOption = [
     Home(),
     ProjectPage(),
+    AgendaPage(),
+    SettingsPage(),
 
   ];
 

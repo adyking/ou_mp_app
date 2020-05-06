@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_add.dart';
+import 'package:ou_mp_app/screens/projects/project_edit.dart';
 import 'package:ou_mp_app/screens/projects/project_page.dart';
 import 'package:ou_mp_app/screens/tasks/task_add.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
@@ -136,6 +137,10 @@ class ProjectDetails extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.mode_edit),
             onPressed: () {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProjectPageEdit()),);
             },
           ),
           IconButton(

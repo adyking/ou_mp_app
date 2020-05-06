@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
+import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:ou_mp_app/style.dart';
 
@@ -59,10 +60,9 @@ Widget _myListView(BuildContext context) {
     Icon(Icons.event_note,color: Color(0xff326fb4)),
     Icon(Icons.assignment_late,color: Color(0xff326fb4))];
 
-
-
   return ListView.builder(
     itemCount: titles.length,
+    physics: const NeverScrollableScrollPhysics(),
     itemBuilder: (context, index) {
 
       return Card( //                           <-- Card widget
@@ -75,7 +75,9 @@ Widget _myListView(BuildContext context) {
               switch (index) {
                 case 0:
                   {
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 0,)),);
                   }
                   break;
                 case 1:
@@ -87,7 +89,9 @@ Widget _myListView(BuildContext context) {
                   break;
                 case 2:
                   {
-
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 1,)),);
                   }
                   break;
 
@@ -100,7 +104,7 @@ Widget _myListView(BuildContext context) {
             },
               leading: icons[index],
               title: Text(titles[index]),
-              trailing: index == 2 ?   Text('6+') :
+              trailing: index == 2 ?  Text('6+',style: TextStyle(color: Colors.red,),) :
               Icon(Icons.keyboard_arrow_right)
             ,
             ),
