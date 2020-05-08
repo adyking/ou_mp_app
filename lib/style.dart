@@ -71,3 +71,13 @@ const setBoxShadow = BoxShadow(
     1.0, // vertical, move down 10
   ),
 );
+
+const setBoxShadowLogin = BoxShadow(
+  color: Colors.white,
+  blurRadius: 10.0, // has the effect of softening the shadow
+  spreadRadius: 0.0, // has the effect of extending the shadow
+  offset: Offset(
+    1.0, // horizontal, move right 10
+    1.0, // vertical, move down 10
+  ),
+);

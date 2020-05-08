@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/screens/login/login_page.dart';
 
 import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:ou_mp_app/screens/projects/project_edit.dart';
@@ -30,15 +31,7 @@ class SettingsPage extends StatelessWidget {
           crossAxisAlignment:  CrossAxisAlignment.stretch,
           children: <Widget>[
 
-            CircularPercentIndicator(
-              radius: 75.0,
-              lineWidth: 5.0,
-              percent: 0.0,
-              center: new Text( "0%", style: TextStyle(
-                color: Colors.white,
-              ),),
-              progressColor: Colors.green,
-            ),
+            Image.asset('assets/images/project-management-white.png', height: 100.0,),
             SizedBox(height: 5.0,),
             Center(
               child: Text(_appName, style: TextStyle(
@@ -219,7 +212,7 @@ Widget _accountListView(BuildContext context) {
                       {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 0,)),);
+                          MaterialPageRoute(builder: (context) => LoginPage()),);
                       }
                       break;
                     case 1:
