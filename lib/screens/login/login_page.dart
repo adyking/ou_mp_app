@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ou_mp_app/main_screen.dart';
-import 'package:ou_mp_app/screens/tasks/task_details.dart';
+import 'package:ou_mp_app/screens/register/sign_up.dart';
 import 'package:ou_mp_app/style.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:intl/intl.dart';
+import 'package:ou_mp_app/controls/storage_util.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPageState createState() => LoginPageState();
+
 }
 
 class LoginPageState extends State<LoginPage> {
@@ -18,8 +17,22 @@ class LoginPageState extends State<LoginPage> {
   FocusNode txtFieldFocusDesc = new FocusNode();
   bool isKeepMeLoggedIn = false;
 
+
   @override
   void initState() {
+    //print(StorageUtil.getString('UserEmail'));
+    if(StorageUtil.checkBool('KeepMeLoggedIn')){
+
+      bool isSet = StorageUtil.getBool('KeepMeLoggedIn');
+
+      if (isSet){
+        isKeepMeLoggedIn = true;
+        emailController.text = StorageUtil.getString('UserEmail');
+        passwordController.text = StorageUtil.getString('UserPassword');
+      }
+
+    }
+
     super.initState();
   }
 
@@ -44,9 +57,41 @@ class LoginPageState extends State<LoginPage> {
   bool isUserValid (){
     bool valid = true;
 
-
-
     return valid;
+  }
+
+   closeAlert(BuildContext context) {
+    Navigator.pop(context);
+
+  }
+
+  forgotPasswordPopUp () {
+    Alert(
+     // style: AlertStyle(isCloseButton: false,),
+        context: context,
+        title: 'PASSWORD RECOVERY',
+        content: Column(
+          children: <Widget>[
+           // Text('Please enter the ou email address you used to register and click on the resend button.\nIf your email exists then you will receive an email with a temporary password. '),
+            TextField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.mail),
+                labelText: 'OU email address',
+              ),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "RESEND",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          ),
+
+        ]).show();
+
   }
 
   @override
@@ -67,6 +112,20 @@ class LoginPageState extends State<LoginPage> {
         onPressed: () {
           bool valid = isUserValid();
           if (valid){
+
+            if(isKeepMeLoggedIn){
+
+              StorageUtil.putBool('KeepMeLoggedIn', isKeepMeLoggedIn);
+              //print(StorageUtil.getBool('KeepMeLoggedIn').toString());
+              StorageUtil.putString('UserEmail', emailController.text);
+              StorageUtil.putString('UserPassword', passwordController.text);
+            } else {
+              StorageUtil.removeKey('KeepMeLoggedIn');
+              StorageUtil.removeKey('UserEmail');
+              StorageUtil.removeKey('UserPassword');
+
+            }
+
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),);
@@ -100,6 +159,7 @@ class LoginPageState extends State<LoginPage> {
 
     final makeEmail = TextField(
       controller: emailController,
+      keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: DefaultThemeColor),
@@ -157,12 +217,12 @@ class LoginPageState extends State<LoginPage> {
           child: InkWell(
 
             onTap: () {
-              print('hello');
+              forgotPasswordPopUp();
             },
             child: Text(
               'Forgot password?',
               style: TextStyle(
-                  color: DefaultThemeColor, decoration: TextDecoration.underline),
+                  color: DefaultThemeColor, decoration: TextDecoration.underline ),
             ),
           ),
         ),
@@ -203,9 +263,19 @@ class LoginPageState extends State<LoginPage> {
           SizedBox(
             width: 5.0,
           ),
-          Text(
-            'Sign Up',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          InkWell(
+
+
+            onTap: () {
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SignUpPageAdd()),);
+            },
+            child: Text(
+              'Sign Up',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600,),
+            ),
           ),
         ],
       ),

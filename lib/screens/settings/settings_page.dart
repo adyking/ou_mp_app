@@ -199,7 +199,6 @@ Widget _accountListView(BuildContext context) {
       itemBuilder: (context, index) {
 
         return Card(
-
           color: Colors.white,
           child: Container(
 
@@ -210,9 +209,10 @@ Widget _accountListView(BuildContext context) {
                   switch (index) {
                     case 0:
                       {
+                      //  Navigator.pushNamed(context, '/l');
+
                         Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),);
+                          context, MaterialPageRoute(builder: (context) => LoginPage()),);
                       }
                       break;
                     case 1:
