@@ -4,6 +4,8 @@ import 'package:ou_mp_app/screens/register/sign_up.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/controls/storage_util.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   LoginPageState createState() => LoginPageState();
@@ -16,6 +18,7 @@ class LoginPageState extends State<LoginPage> {
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   bool isKeepMeLoggedIn = false;
+  bool valid = false;
 
 
   @override
@@ -54,8 +57,51 @@ class LoginPageState extends State<LoginPage> {
   }
 
 
+  Future doLogin() async {
+    var url = 'http://www.jteki.com/api/login.php';
+    final response = await http.post(url, body: {
+      'email': emailController.text,
+      'password': passwordController.text,
+    });
+
+
+    var dataUser = json.decode(response.body);
+
+    int _statusCode = dataUser['StatusCode'];
+
+
+    if (_statusCode==200){
+
+      print(' Correct password, your name is ' + dataUser['Response']['name']);
+
+      if(isKeepMeLoggedIn){
+
+        StorageUtil.putBool('KeepMeLoggedIn', isKeepMeLoggedIn);
+        //print(StorageUtil.getBool('KeepMeLoggedIn').toString());
+        StorageUtil.putString('UserEmail', emailController.text);
+        StorageUtil.putString('UserPassword', passwordController.text);
+      } else {
+        StorageUtil.removeKey('KeepMeLoggedIn');
+        StorageUtil.removeKey('UserEmail');
+        StorageUtil.removeKey('UserPassword');
+
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),);
+    }else{
+
+
+      print('wrong password ' );
+    }
+
+  }
+
   bool isUserValid (){
-    bool valid = true;
+
+
+       doLogin();
 
     return valid;
   }
@@ -110,26 +156,8 @@ class LoginPageState extends State<LoginPage> {
     final makeLoginButton = Center(
       child: RaisedButton(
         onPressed: () {
-          bool valid = isUserValid();
-          if (valid){
 
-            if(isKeepMeLoggedIn){
-
-              StorageUtil.putBool('KeepMeLoggedIn', isKeepMeLoggedIn);
-              //print(StorageUtil.getBool('KeepMeLoggedIn').toString());
-              StorageUtil.putString('UserEmail', emailController.text);
-              StorageUtil.putString('UserPassword', passwordController.text);
-            } else {
-              StorageUtil.removeKey('KeepMeLoggedIn');
-              StorageUtil.removeKey('UserEmail');
-              StorageUtil.removeKey('UserPassword');
-
-            }
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),);
-          }
+          doLogin();
 
         },
         textColor: Colors.white,

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 
 
@@ -28,7 +30,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -46,6 +47,29 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
       }
     });
     return c;
+  }
+
+  Future getData() async {
+    var url = 'http://www.jteki.com/api/get.php';
+    http.Response response = await http.get(url);
+    var data = jsonDecode(response.body);
+    print(data[0]['ID'].toString());
+
+  }
+
+  Future doSignUp() async {
+    var url = 'http://www.jteki.com/api/sign_up.php';
+    http.Response response = await http.post(url,body: {
+      'name': fullNameController.text,
+      'email': emailController.text,
+      'password': passwordController.text,
+      'activationCode': 'hssa'
+    });
+
+    var signUpData = json.decode(response.body);
+    print(signUpData);
+
+
   }
 
 
@@ -217,7 +241,9 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
 
 
     void createUser () {
-      displaySuccessAlert();
+      doSignUp();
+
+      //displaySuccessAlert();
 
 
     }
@@ -292,6 +318,10 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
 
       ),
     );
+
+
+
+
   }
 
   void displaySuccessAlert() {
