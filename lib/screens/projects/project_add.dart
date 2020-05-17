@@ -4,17 +4,24 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 
 
 
 
 class ProjectPageAdd extends StatefulWidget{
+  final studentId;
 
-  ProjectPageAddState  createState() => ProjectPageAddState();
+  ProjectPageAdd({Key key, this.studentId}) : super(key :key);
+
+  ProjectPageAddState  createState() => ProjectPageAddState(studentId: studentId);
 }
 
 class ProjectPageAddState extends State<ProjectPageAdd> {
 
+  ProjectPageAddState({Key key, this.studentId});
+
+  final studentId;
   String appBarTitle = 'New Project';
   String sCategory;
   DateTime sStartDate;
@@ -40,6 +47,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
+    print(studentId);
 
   }
 
@@ -91,7 +99,32 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
   @override
   Widget build(BuildContext context) {
 
-
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     final makeProjectField = TextField(
       controller: projectNameController,
@@ -190,6 +223,9 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sStartDate = value;
+      },
       controller: projectStartDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -200,6 +236,9 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sEndDate = value;
+      },
       controller: projectEndDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -258,11 +297,27 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     }
 
 
-    void editProject () {
-      displaySuccessAlert();
+    void createProject () {
+
+
+      ServicesAPI.addProject(studentId, projectNameController.text,
+          projectDescController.text, sCategory, sStartDate,
+          sEndDate).then((value) {
+
+        if(value !=0) {
+          _showAlertDialog('Info', 'A new project has been created successfuly!');
+        }
+
+
+      });
+
+
+
 
 
     }
+
+
 
     return Scaffold(
 
@@ -282,7 +337,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
 
               if (errors == false) {
                 userHelpText = null;
-                editProject();
+                createProject();
               }
             },
           ),

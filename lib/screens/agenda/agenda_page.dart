@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_add.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
 import 'package:ou_mp_app/screens/tasks/task_add.dart';
@@ -13,26 +14,29 @@ import 'package:flutter_clean_calendar/flutter_clean_calendar.dart';
 
 class AgendaPage extends StatefulWidget{
 
-  final int projectId;
+  final Student student;
 
 
-  AgendaPage({Key key, this.projectId}) : super(key : key);
+  AgendaPage({Key key, this.student}) : super(key : key);
 
-  AgendaPageState  createState() => AgendaPageState(projectId: projectId);
+  AgendaPageState  createState() => AgendaPageState(student: student);
 }
 
 class AgendaPageState extends State<AgendaPage> {
-  final int projectId;
+  final Student student;
   List _selectedTasks;
   DateTime _selectedDay;
 
 
-  AgendaPageState({Key key, this.projectId});
+  AgendaPageState({Key key, this.student});
 
   @override
   void initState() {
-    super.initState();
+
+
     _selectedTasks = _tasks[_selectedDay] ?? [];
+    super.initState();
+
   }
 
   @override

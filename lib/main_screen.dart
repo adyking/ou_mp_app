@@ -1,40 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/agenda/agenda_page.dart';
+import 'package:ou_mp_app/screens/login/login_page.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_page.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:ou_mp_app/screens/settings/settings_page.dart';
 import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'screens/home/home.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MainScreen extends StatefulWidget {
   final int tabIndex;
+  final int studentId;
 
-  MainScreen({Key key, this.tabIndex}) : super(key:key);
+  MainScreen({Key key, this.tabIndex, this.studentId}) : super(key:key);
 
   @override
-  MainScreenState createState() => MainScreenState(selectedScreen:tabIndex);
+  MainScreenState createState() => MainScreenState(selectedScreen:tabIndex, studentId: studentId);
 
 }
 
 class MainScreenState extends State<MainScreen>{
   int selectedScreen;
+  final int studentId;
   final colorActive = BottomBarColorActive;
   final colorInactive = BottomBarColorInactive;
+  Student student;
 
-  MainScreenState({Key ke, this.selectedScreen});
+  MainScreenState({Key key, this.selectedScreen, this.studentId});
 
 
-@override
+  @override
+  void initState() {
+    setState(() {
+
+      ServicesAPI.getStudentById(studentId).then((value) {
+
+        student = value;
+
+        if (student==null){
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),);
+        }
+
+
+      });
+
+    });
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
   // Pages for the bottom navigation bar
   final _screenOption = [
-    Home(),
-    ProjectPage(),
-    AgendaPage(),
-    SettingsPage(),
+    Home(student: student),
+    ProjectPage(student: student),
+    AgendaPage(student: student),
+    SettingsPage(student: student),
 
   ];
 

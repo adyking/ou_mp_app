@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ou_mp_app/controls/storage_util.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 import 'package:ou_mp_app/screens/default.dart';
 import 'package:splashscreen/splashscreen.dart';
 

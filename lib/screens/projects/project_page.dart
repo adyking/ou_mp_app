@@ -1,10 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/style.dart';
 
 
-class ProjectPage extends StatelessWidget {
+
+
+class ProjectPage extends StatefulWidget{
+  final Student student;
+
+  ProjectPage({Key key, this.student}) : super(key : key);
+
+  ProjectPageState  createState() => ProjectPageState(student:student);
+}
+
+
+class ProjectPageState extends State<ProjectPage> {
+  final Student student;
+
+  ProjectPageState({Key key, this.student});
+
+
+  @override
+  void initState() {
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +44,7 @@ class ProjectPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProjectPageAdd()),);
+                  MaterialPageRoute(builder: (context) => ProjectPageAdd(studentId: student.id,)),);
               },
             ),
 
@@ -57,6 +79,9 @@ class ProjectPage extends StatelessWidget {
       ),
     );
   }
+
+
+
 
 }
 

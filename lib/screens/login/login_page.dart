@@ -1,11 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/main_screen.dart';
+import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/register/sign_up.dart';
 import 'package:ou_mp_app/style.dart';
-import 'package:ou_mp_app/controls/storage_util.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:ou_mp_app/utils/services_api.dart';
+
 
 class LoginPage extends StatefulWidget {
   LoginPageState createState() => LoginPageState();
@@ -19,10 +24,14 @@ class LoginPageState extends State<LoginPage> {
   FocusNode txtFieldFocusDesc = new FocusNode();
   bool isKeepMeLoggedIn = false;
   bool valid = false;
+  Student _student;
+
 
 
   @override
   void initState() {
+
+
     //print(StorageUtil.getString('UserEmail'));
     if(StorageUtil.checkBool('KeepMeLoggedIn')){
 
@@ -56,6 +65,55 @@ class LoginPageState extends State<LoginPage> {
     return c;
   }
 
+
+  doGoToMainScreen() {
+
+    //print(' Correct password, your name is ' + _student.name);
+
+    if(isKeepMeLoggedIn){
+
+      StorageUtil.putBool('KeepMeLoggedIn', isKeepMeLoggedIn);
+      StorageUtil.putString('UserEmail', _student.email);
+      StorageUtil.putString('UserPassword', _student.password);
+    } else {
+      StorageUtil.removeKey('KeepMeLoggedIn');
+      StorageUtil.removeKey('UserEmail');
+      StorageUtil.removeKey('UserPassword');
+
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0, studentId: _student.id,)),);
+
+  }
+
+  Future<void> _showAlertDialog(String title, String msg) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$title'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('$msg'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future doLogin() async {
     var url = 'http://www.jteki.com/api/login.php';
@@ -98,14 +156,6 @@ class LoginPageState extends State<LoginPage> {
 
   }
 
-  bool isUserValid (){
-
-
-       doLogin();
-
-    return valid;
-  }
-
    closeAlert(BuildContext context) {
     Navigator.pop(context);
 
@@ -144,20 +194,98 @@ class LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final _pad = 10.0;
 
-    final makeKeepMeLoggedInCheckBox = Checkbox(
-      value: isKeepMeLoggedIn,
-      onChanged: (bool value) {
-        setState(() {
-          isKeepMeLoggedIn = value;
-        });
-      },
-    );
+     final activationCodeController = TextEditingController();
+
+
+    Future<String> alertActivateAccount(BuildContext context) async {
+
+      return showDialog(context: context, builder: (context) {
+       return  AlertDialog(
+         title: Text('Activation code required'),
+         content: TextField(
+
+           controller: activationCodeController,
+         ),
+         actions: <Widget>[
+           MaterialButton(
+             elevation: 5.0,
+             child: Text('VALIDATE'),
+             onPressed: () {
+               if(activationCodeController.text != ''){
+                 Navigator.of(context).pop(activationCodeController.text.toString());
+               } else {
+                _showAlertDialog('Error', 'Activation code must not be blank!');
+               }
+
+             },
+           ),
+           MaterialButton(
+             elevation: 10.0,
+             child: Text('CANCEL'),
+             onPressed: () {
+               Navigator.of(context).pop();
+             },
+           ),
+
+         ],
+       );
+      },);
+
+    }
 
     final makeLoginButton = Center(
       child: RaisedButton(
         onPressed: () {
 
-          doLogin();
+          setState(() {
+
+            if(emailController.text != '' && passwordController.text != ''){
+              ServicesAPI.getStudentByLogin(emailController.text,
+                  passwordController.text).then((value) {
+
+                _student = value;
+
+                if(_student == null){
+                  _showAlertDialog('Error', 'Incorrect loging details or cannot find the account.');
+                } else {
+
+                  // check if active
+                  if(_student.isActive == 1) {
+                    doGoToMainScreen();
+                  } else {
+                    String _activationCode = '';
+                    alertActivateAccount(context).then((onValue) {
+                      _activationCode = onValue;
+
+
+                      if (_activationCode != null){
+
+                        if (_activationCode == _student.activationCode){
+
+                          updateActiveFlag();
+
+                        } else {
+                          _showAlertDialog('Error', 'Incorrect activation code for this account.');
+                        }
+
+                      }
+                    } );
+
+
+                  }
+
+
+                }
+
+              });
+            }
+
+          });
+
+
+
+
+        //  doLogin();
 
         },
         textColor: Colors.white,
@@ -351,4 +479,20 @@ class LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  void updateActiveFlag() {
+
+    ServicesAPI.activateStudentAccount(_student.id).then((value) {
+
+      if(value==true){
+
+        doGoToMainScreen();
+
+      }
+
+    } );
+
+  }
+
+
 }

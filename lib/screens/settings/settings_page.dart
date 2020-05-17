@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/login/login_page.dart';
-
-import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
-import 'package:ou_mp_app/screens/projects/project_edit.dart';
-
 import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
 import 'package:ou_mp_app/style.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 
 
-import '../../main_screen.dart';
 
 
 class SettingsPage extends StatelessWidget {
+
+ final Student student;
+
+  SettingsPage({Key key, this.student}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final _appName = 'OU Project Management';
     final _appVersion = '1.0.0';
-    final _userFullName = 'Adilson Jacinto';
-    final _userEmail = 'apaj2@ou.ac.uk';
+    final _userFullName = student.name;
+    final _userEmail = student.email;
 
 
     final makeSettingsHeader = Container(
