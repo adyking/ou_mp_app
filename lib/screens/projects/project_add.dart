@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/main_screen.dart';
+import 'package:ou_mp_app/models/student.dart';
+import 'package:ou_mp_app/screens/projects/project_page.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
@@ -30,6 +33,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
 
+
   final projectNameController = TextEditingController();
   final projectDescController = TextEditingController();
   final projectStartDateController = TextEditingController();
@@ -47,7 +51,10 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
-    print(studentId);
+    sCategory = 'Research';
+    sStartDate = DateTime.now();
+    sEndDate = DateTime.now();
+    //print(studentId);
 
   }
 
@@ -117,7 +124,12 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
               FlatButton(
                 child: Text('OK'),
                 onPressed: () {
-                  Navigator.of(context).pop();
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        MainScreen(tabIndex: 1, studentId: studentId,)),);
+
                 },
               ),
             ],

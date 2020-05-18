@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class TaskPageAdd extends StatefulWidget {
-  TaskPageAddState createState() => TaskPageAddState();
+  final projectId;
+
+  TaskPageAdd({Key key, this.projectId}) : super(key :key);
+
+  TaskPageAddState createState() => TaskPageAddState(projectId: projectId);
 }
 
 class TaskPageAddState extends State<TaskPageAdd> {
+  final projectId;
+
+  TaskPageAddState({Key key, this.projectId});
+
   String appBarTitle = 'New Task';
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
+  String sPriority;
+  DateTime sStartDate;
+  DateTime sEndDate;
+  double sEstimatedTime;
 
   final taskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -26,11 +40,16 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
   @override
   void initState() {
-    super.initState();
-
+    sPriority = 'Low';
+    sStartDate = DateTime.now();
+    sEndDate = DateTime.now();
+    sEstimatedTime = 0.0;
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
+    super.initState();
+
+
   }
 
   @override
@@ -108,6 +127,8 @@ class TaskPageAddState extends State<TaskPageAdd> {
            estimatedTimeController.text = '0.0';
         }
 
+        sEstimatedTime = double.parse(estimatedTimeController.text);
+
       });
 
     }
@@ -130,6 +151,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
     final makeDurationField = TextField(
+
       controller: durationController,
       readOnly: true,
       enabled: false,
@@ -146,7 +168,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
 
 
-    final makeUserhelp = Column(
+    final makeUserHelp = Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -189,6 +211,32 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sStartDate = value;
+        setState(() {
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: startDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -198,6 +246,33 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sEndDate = value;
+
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: endDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -206,11 +281,74 @@ class TaskPageAddState extends State<TaskPageAdd> {
       decoration: InputDecoration(labelText: "End date*"),
     );
 
+    final makeDDPriority = FormBuilderDropdown(
+      onChanged: (value) {
+        setState(() {
+          sPriority = value;
+        });
+
+      },
+      attribute: "priority",
+      decoration: InputDecoration(labelText: "Priority"
+
+      ),
+      initialValue: 'Low',
+      hint: Text('Select priority'),
+      validators: [FormBuilderValidators.required()],
+      items: ['Low', 'Medium', 'High']
+          .map((priority) => DropdownMenuItem(
+          value: priority,
+          child: Text("$priority")
+      )).toList(),
+    );
+
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        ProjectDetails(projectId: projectId,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
     void createTask() {
 
-      diplaySuccessAlert();
+      ServicesAPI.addTask(projectId, taskNameController.text, sStartDate,
+          sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
+
+        if(value !=0) {
+          _showAlertDialog('Info', 'A new task has been created successfuly!');
+        }
+
+
+      });
 
     }
+
 
     bool checkFields() {
       bool errors = false;
@@ -321,6 +459,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
                             makeEndDate,
                             makeDurationField,
                             makeEstimatedTimeField,
+                            makeDDPriority,
                             SizedBox(
                               height: 30.0,
                             ),
@@ -332,7 +471,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
                       ),
                     ),
                     Visibility(
-                      child: makeUserhelp,
+                      child: makeUserHelp,
                       visible: userHelpText == null ? false : true,
                     ),
                   ],
@@ -345,7 +484,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
   }
 
-  void diplaySuccessAlert() {
+  void displaySuccessAlert() {
     Alert(
       context: context,
       type: AlertType.success,

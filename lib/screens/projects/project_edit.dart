@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 
@@ -9,11 +10,19 @@ import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 
 
 class ProjectPageEdit extends StatefulWidget{
+  final int projectId;
 
-  ProjectPageEditState  createState() => ProjectPageEditState();
+  ProjectPageEdit({Key key, this.projectId}) : super(key :key);
+
+  ProjectPageEditState  createState() => ProjectPageEditState(projectId :projectId);
 }
 
 class ProjectPageEditState extends State<ProjectPageEdit> {
+
+  final int projectId;
+
+
+  ProjectPageEditState({Key key, this.projectId});
 
   String appBarTitle = 'Edit Project';
   String sCategory;
@@ -22,6 +31,7 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
+  bool _loaded =false;
 
   final projectNameController = TextEditingController();
   final projectDescController = TextEditingController();
@@ -35,17 +45,31 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
 
   @override
   void initState() {
+
+
+
+    ServicesAPI.getProjectById(projectId).then((value) {
+
+      setState(() {
+        projectNameController.text = value.name;
+        sCategory = value.category;
+        projectDescController.text = value.description;
+        sStartDate = value.startDate;
+        sEndDate = value.endDate;
+        _loaded = true;
+      });
+
+    });
+
+
+
     super.initState();
 
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
 
-    projectNameController.text = 'TM470 Project';
-    sCategory = 'Development';
-    projectDescController.text = 'Mobile app o manage OU projects';
-    sStartDate = new DateFormat("dd-MM-yyyy").parse('08-02-2020');
-    sEndDate = new DateFormat("dd-MM-yyyy").parse('14-09-2020');
+
 
   }
 
@@ -96,7 +120,6 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
 
   @override
   Widget build(BuildContext context) {
-
 
 
     final makeProjectField = TextField(
@@ -312,17 +335,26 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
                         padding: const EdgeInsets.all(10.0),
                         child: Column(
                           children: <Widget>[
-                            makeProjectField,
-                            makeProjectDescription,
-                            makeDDType,
-                            makeStartDate,
-                            makeEndDate,
-                            SizedBox(
-                              height: 30.0,
+
+                            Visibility(
+                              visible: _loaded == true ? true : false,
+                              child: Column(
+                                children: <Widget>[
+                                  makeProjectField,
+                                  makeProjectDescription,
+                                  makeDDType,
+                                  makeStartDate,
+                                  makeEndDate,
+                                  SizedBox(
+                                    height: 30.0,
+                                  ),
+                                  Row(
+                                    children: <Widget>[Text('* required field')],
+                                  ),
+                                ],
+                              ),
                             ),
-                            Row(
-                              children: <Widget>[Text('* required field')],
-                            ),
+
                           ],
                         ),
                       ),

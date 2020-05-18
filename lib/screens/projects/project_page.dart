@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/style.dart';
-
-
+import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:intl/intl.dart';
 
 
 class ProjectPage extends StatefulWidget{
@@ -18,13 +19,22 @@ class ProjectPage extends StatefulWidget{
 
 class ProjectPageState extends State<ProjectPage> {
   final Student student;
-
+  List<Project> _projectsList = List<Project>();
+  bool loadingProgress = true;
   ProjectPageState({Key key, this.student});
 
 
   @override
   void initState() {
 
+    ServicesAPI.getProjectByStudentId(student.id).then((value) {
+      setState(() {
+        _projectsList.addAll(value);
+        loadingProgress = false;
+      });
+
+
+    });
     super.initState();
   }
 
@@ -61,8 +71,19 @@ class ProjectPageState extends State<ProjectPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
+                    Visibility(
+                      visible:  loadingProgress,
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(height: 10.0,),
+                          CircularProgressIndicator(),
+                          SizedBox(height: 10.0,),
+                        ],
+                      ) ,
+                    ),
+
                     Container(
-                      height: 200.0,
+
                       child: _myListView(context) ,
                     ),
 
@@ -80,45 +101,60 @@ class ProjectPageState extends State<ProjectPage> {
     );
   }
 
+  Widget _myListView(BuildContext context) {
 
 
+    String dateFormatted (DateTime dt) {
 
-}
+      var formattedDate =  DateFormat.yMMMd('en_US').format(dt);
 
+      return formattedDate;
 
-Widget _myListView(BuildContext context) {
+    }
 
-  final titles = ['TM470 Project'];
+    final double listH = _projectsList.length.toDouble() * 80;
 
+    return Container(
+      height: listH,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _projectsList.length,
+        itemBuilder: (context, index) {
 
+          return Card( //                           <-- Card widget
+            child: Container(
 
-  return ListView.builder(
-    itemCount: titles.length,
-    itemBuilder: (context, index) {
+              color: Colors.white,
+              child: ListTileTheme(
 
-      return Card( //                           <-- Card widget
-        child: Container(
-          color: Colors.white,
-          child: ListTileTheme(
-
-            child: ListTile(
-             // isThreeLine: true,
-              subtitle: Text('Development\n08/02/2020 - 14/09/2020',
-              style: TextStyle(fontSize: 14.0),
+                child: ListTile(
+                  // isThreeLine: true,
+                  subtitle: Text(_projectsList[index].category + '\n' +
+                     dateFormatted(_projectsList[index].startDate) + ' - ' +
+                    dateFormatted(_projectsList[index].endDate),
+                    style: TextStyle(fontSize: 14.0),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          ProjectDetails(projectId: _projectsList[index].id,)),);
+                  },
+                  // leading: icons[index],
+                  title: Text(_projectsList[index].name),
+                  trailing: Icon(Icons.keyboard_arrow_right)
+                  ,
+                ),
               ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProjectDetails()),);
-              },
-             // leading: icons[index],
-              title: Text(titles[index]),
-              trailing: Icon(Icons.keyboard_arrow_right)
-              ,
             ),
-          ),
-        ),
-      );
-    },
-  );
+          );
+        },
+      ),
+    );
+  }
+
+
+
 }
+
+

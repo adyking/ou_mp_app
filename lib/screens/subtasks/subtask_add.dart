@@ -5,16 +5,29 @@ import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:ou_mp_app/models/task.dart';
 
 class SubTaskPageAdd extends StatefulWidget {
-  SubTaskPageAddState createState() => SubTaskPageAddState();
+  final int taskId;
+
+  SubTaskPageAdd({Key key, this.taskId}) : super(key:key);
+  SubTaskPageAddState createState() => SubTaskPageAddState(taskId:taskId);
 }
 
 class SubTaskPageAddState extends State<SubTaskPageAdd> {
+  final int taskId;
+  Task _task;
+
+  SubTaskPageAddState({Key key, this.taskId});
   String appBarTitle = 'New Subtask';
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
+  String sPriority;
+  DateTime sStartDate;
+  DateTime sEndDate;
+  double sEstimatedTime;
 
   final subtaskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -26,11 +39,23 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
 
   @override
   void initState() {
-    super.initState();
+
+    ServicesAPI.getTaskById(taskId).then((value) {
+
+      _task = value;
+    });
+
+    sPriority = 'Low';
+    sStartDate = DateTime.now();
+    sEndDate = DateTime.now();
+    sEstimatedTime = 0.0;
 
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
+    super.initState();
+
+
   }
 
   @override
@@ -107,6 +132,7 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
         if(n == null) {
           estimatedTimeController.text = '0.0';
         }
+        sEstimatedTime = double.parse(estimatedTimeController.text);
 
       });
 
@@ -189,6 +215,32 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sStartDate = value;
+        setState(() {
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: startDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -198,6 +250,33 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sEndDate = value;
+
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: endDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -208,6 +287,12 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
 
 
     final makeDDPriority = FormBuilderDropdown(
+      onChanged: (value) {
+        setState(() {
+          sPriority = value;
+        });
+
+      },
       attribute: "priority",
       decoration: InputDecoration(labelText: "Priority"
 
@@ -222,9 +307,56 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
       )).toList(),
     );
 
-    void createTask() {
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
-      diplaySuccessAlert();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        TaskDetails(id: taskId,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void createSubtask() {
+
+      ServicesAPI.addSubtask(taskId, subtaskNameController.text, sStartDate,
+          sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
+
+        if(value !=0) {
+          _showAlertDialog('Info', 'A new stask has been created successfuly for the current task!');
+        }
+
+
+      });
+
+    }
+    String dateFormatted (DateTime dt) {
+
+      var formattedDate =  DateFormat('dd-MM-yyyy').format(dt);
+
+      return formattedDate;
 
     }
 
@@ -262,10 +394,40 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
         }
 
         if (startDateController.text != '' && endDateController.text != '') {
+
           DateTime str =
           new DateFormat("dd-MM-yyyy").parse(startDateController.text);
           DateTime end =
           new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+          int diffStartDays = _task.startDate.difference(str).inDays;
+          int diffEndDays = _task.endDate.difference(end).inDays;
+
+          if (diffStartDays < 0) {
+
+            errors = true;
+            if (userHelpText != ''){
+              userHelpText =  userHelpText + '\n\n';
+            }
+            userHelpText =
+                userHelpText + 'Start date can only be between ' +
+               dateFormatted(_task.startDate) + ' and ' +
+                    dateFormatted(_task.endDate) + ' of the main task.';
+          }
+
+          if (diffEndDays < 0) {
+
+            errors = true;
+            if (userHelpText != ''){
+              userHelpText =  userHelpText + '\n\n';
+            }
+            userHelpText =
+                userHelpText + 'End date can only be between ' +
+                    dateFormatted(_task.startDate) + ' and ' +
+                    dateFormatted(_task.endDate) + ' of the main task.';
+        }
+
+
 
           int diffDays = end.difference(str).inDays;
 
@@ -284,6 +446,8 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
             }
 
           }
+
+
         }
       });
       return errors;
@@ -307,7 +471,7 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
 
               if (errors == false) {
                 userHelpText = null;
-                createTask();
+                createSubtask();
 
               }
 

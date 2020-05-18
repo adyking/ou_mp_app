@@ -34,23 +34,23 @@ class MainScreenState extends State<MainScreen>{
 
   @override
   void initState() {
-    setState(() {
+
 
       ServicesAPI.getStudentById(studentId).then((value) {
+        setState(() {
+          student = value;
 
-        student = value;
+          if (student==null){
 
-        if (student==null){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),);
+          }
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),);
-        }
-
+        });
 
       });
 
-    });
 
     super.initState();
   }
@@ -71,7 +71,7 @@ class MainScreenState extends State<MainScreen>{
     onWillPop: () async => false,
     child: Scaffold(
 
-      body: _screenOption[selectedScreen],
+      body: student == null ? _screenOption[0] : _screenOption[selectedScreen],
 
       backgroundColor: Colors.grey[200],
       bottomNavigationBar: BottomNavigationBar(
