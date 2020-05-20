@@ -5,6 +5,7 @@ import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 
 class SubTaskPageEdit extends StatefulWidget {
   final int id;
@@ -25,6 +26,10 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
   String sPriority;
   DateTime sStartDate;
   DateTime sEndDate;
+  double sEstimatedTime;
+  bool _loaded = false;
+  int _taskId = 0;
+  double pvEstimatedTime;
 
   final subtaskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -40,19 +45,41 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
 
   @override
   void initState() {
-    super.initState();
+
+
+    ServicesAPI.getSubtaskById(id).then((value) {
+      setState(() {
+
+
+        subtaskNameController.text = value.name;
+        appBarTitle = value.name;
+
+        durationController.text = value.duration;
+        estimatedTimeController.text = value.allocatedHours.toString();
+        pvEstimatedTime = value.allocatedHours;
+        sPriority = value.priority;
+        sStartDate = value.startDate;
+        sEndDate = value.endDate;
+        sPriority = value.priority;
+        _taskId = value.taskId;
+        _loaded = true;
+
+
+
+      });
+
+    });
 
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
-    subtaskNameController.text = 'Choose topic.';
-    appBarTitle = 'Choose topic.';
+    super.initState();
 
-    durationController.text = '1 day';
-    estimatedTimeController.text = '2.0';
-    sPriority = 'Medium';
-    sStartDate = new DateFormat("dd-MM-yyyy").parse('09-02-2020');
-    sEndDate = new DateFormat("dd-MM-yyyy").parse('09-02-2020');
+
+
+
+
+
 
 
   }
@@ -243,8 +270,81 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
           .toList(),
     );
 
+
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        TaskDetails(id: id,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
     void editSubtask() {
-      displaySuccessAlert();
+
+
+      ServicesAPI.updateTask(id, subtaskNameController.text, sStartDate,
+          sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
+
+        if(value !=0) {
+
+          if (pvEstimatedTime != sEstimatedTime){
+            // Update allocated hours for the main task
+            ServicesAPI.getSubtasksByTaskId(_taskId).then((value) {
+              double countTime = 0.0;
+              for(var i=0; i < value.length; i++){
+
+                countTime = countTime + value[i].allocatedHours;
+
+              }
+
+              ServicesAPI.updateTaskEstimatedTime(_taskId, countTime).then((value) {
+                if (value != 0) {
+                  _showAlertDialog(
+                      'Info', 'Subtask has been updated successfully!');
+                }
+              });
+
+            });
+
+          } else {
+            _showAlertDialog(
+                'Info', 'Subtask has been updated successfully!');
+          }
+
+
+
+
+        } else {
+          _showAlertDialog('Error', 'Could not update the subtask, please try again.');
+
+        }
+
+
+      });
+
     }
 
     bool checkFields() {

@@ -29,6 +29,7 @@ class TaskPageEditState extends State<TaskPageEdit> {
   DateTime sEndDate;
   double sEstimatedTime;
   bool _loaded =false;
+  bool estimatedTimeReadOnly = false;
 
   final taskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -58,6 +59,21 @@ class TaskPageEditState extends State<TaskPageEdit> {
         sPriority = value.priority;
 
         _loaded = true;
+
+        ServicesAPI.getSubtasksByTaskId(value.id).then((value) {
+          setState(() {
+
+            if (value.length>0){
+              estimatedTimeReadOnly = true;
+            }
+
+
+
+          });
+
+        });
+
+
       });
 
     });
@@ -113,6 +129,38 @@ class TaskPageEditState extends State<TaskPageEdit> {
 
   @override
   Widget build(BuildContext context) {
+    showAlertNoteDialog(BuildContext context, String msg) {
+
+      // set up the buttons
+      Widget okButton = FlatButton(
+        child: Text('OK'),
+        onPressed:  () {
+
+          Navigator.pop(context);
+
+        },
+      );
+
+      // set up the AlertDialog
+      AlertDialog alert = AlertDialog(
+        title: Text('Note'),
+        content: Text(msg),
+        actions: [
+          okButton,
+
+        ],
+      );
+
+      // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+
+
     final makeTaskField = TextField(
       controller: taskNameController,
       focusNode: txtFieldFocus,
@@ -150,18 +198,33 @@ class TaskPageEditState extends State<TaskPageEdit> {
 
 
     final makeEstimatedTimeField = TextFormField(
+      readOnly: estimatedTimeReadOnly,
       controller: estimatedTimeController,
       keyboardType: TextInputType.number,
       onChanged: estimatedTimeValidator,
       //onFieldSubmitted: estimatedTimeValidator,
       decoration: InputDecoration(
+        icon: IconButton(
+          tooltip: 'Hint',
+          color: DefaultThemeColor,
+          onPressed: () {
+            var msg = 'Estimate time may change automatically if subtasks '
+                'are added to this main task, if so this field will then be in read-only mode.';
+            showAlertNoteDialog(context, msg);
+
+
+          },
+          icon: Icon(Icons.info
+          ),
+        ),
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: DefaultThemeColor),
         ),
         labelStyle: TextStyle(
           color: _setColorFocusDesc(),
         ),
-        labelText: 'Estimate time (hours)*',
+        labelText: estimatedTimeReadOnly==false ? 'Estimate time (hours)*' :
+        'Estimate time (hours) read-only mode*' ,
       ),
     );
 

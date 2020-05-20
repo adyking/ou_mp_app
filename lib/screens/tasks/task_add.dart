@@ -7,6 +7,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:ou_mp_app/models/project.dart';
 
 class TaskPageAdd extends StatefulWidget {
   final projectId;
@@ -29,6 +30,8 @@ class TaskPageAddState extends State<TaskPageAdd> {
   DateTime sStartDate;
   DateTime sEndDate;
   double sEstimatedTime;
+  Project _project;
+
 
   final taskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -40,6 +43,11 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
   @override
   void initState() {
+
+    ServicesAPI.getProjectById(projectId).then((value) {
+      _project = value;
+    });
+
     sPriority = 'Low';
     sStartDate = DateTime.now();
     sEndDate = DateTime.now();
@@ -98,6 +106,81 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
   @override
   Widget build(BuildContext context) {
+
+    showAlertNoteDialog(BuildContext context, String msg) {
+
+      // set up the buttons
+      Widget okButton = FlatButton(
+        child: Text('OK'),
+        onPressed:  () {
+
+          Navigator.pop(context);
+
+        },
+      );
+
+      // set up the AlertDialog
+      AlertDialog alert = AlertDialog(
+        title: Text('Note'),
+        content: Text(msg),
+        actions: [
+          okButton,
+
+        ],
+      );
+
+      // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+
+
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  if (title=='Error') {
+
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          ProjectDetails(projectId: projectId,)),);
+                  }
+
+
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
     final makeTaskField = TextField(
       controller: taskNameController,
       focusNode: txtFieldFocus,
@@ -135,11 +218,26 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
 
     final makeEstimatedTimeField = TextFormField(
+
       controller: estimatedTimeController,
       keyboardType: TextInputType.number,
       onChanged: estimatedTimeValidator,
+
       //onFieldSubmitted: estimatedTimeValidator,
       decoration: InputDecoration(
+        icon: IconButton(
+          tooltip: 'Hint',
+          color: DefaultThemeColor,
+          onPressed: () {
+            var msg = 'Estimate time may change automatically if subtasks '
+                'are added to this main task, if so this field will then be in read-only mode.';
+            showAlertNoteDialog(context, msg);
+
+
+          },
+          icon: Icon(Icons.info
+        ),
+        ),
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: DefaultThemeColor),
         ),
@@ -282,6 +380,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
     );
 
     final makeDDPriority = FormBuilderDropdown(
+
       onChanged: (value) {
         setState(() {
           sPriority = value;
@@ -302,37 +401,6 @@ class TaskPageAddState extends State<TaskPageAdd> {
       )).toList(),
     );
 
-    Future<void> _showAlertDialog(String title, String msg) async {
-      return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('$title'),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  Text('$msg'),
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('OK'),
-                onPressed: () {
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>
-                        ProjectDetails(projectId: projectId,)),);
-
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
 
 
     void createTask() {
@@ -341,7 +409,10 @@ class TaskPageAddState extends State<TaskPageAdd> {
           sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
 
         if(value !=0) {
-          _showAlertDialog('Info', 'A new task has been created successfuly!');
+          _showAlertDialog('Info', 'A new task has been created successfully!');
+        } else {
+          _showAlertDialog('Error', 'Could not create a new task, please try again.');
+
         }
 
 
@@ -349,7 +420,13 @@ class TaskPageAddState extends State<TaskPageAdd> {
 
     }
 
+    String dateFormatted (DateTime dt) {
 
+      var formattedDate =  DateFormat('dd-MM-yyyy').format(dt);
+
+      return formattedDate;
+
+    }
     bool checkFields() {
       bool errors = false;
       setState(() {
@@ -388,6 +465,57 @@ class TaskPageAddState extends State<TaskPageAdd> {
               new DateFormat("dd-MM-yyyy").parse(startDateController.text);
           DateTime end =
               new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+          int errorStart = 0;
+          int errorEnd = 0;
+          int diffStartDays = str.difference(_project.startDate).inDays;
+          int diffStartEndDays = str.difference(_project.endDate).inDays;
+          int diffEndDays = end.difference(_project.endDate).inDays;
+          int diffEndStartDays = end.difference(_project.startDate).inDays;
+
+          if (diffStartDays < 0) {
+            errorStart = 1;
+          }
+
+          if (diffStartEndDays > 0) {
+            errorStart = 1;
+          }
+
+          if (diffEndDays > 0) {
+            errorEnd = 1;
+          }
+
+          if (diffEndStartDays < 0) {
+            errorEnd = 1;
+          }
+
+          if (errorStart == 1) {
+
+            errors = true;
+            if (userHelpText != ''){
+              userHelpText =  userHelpText + '\n\n';
+            }
+            userHelpText =
+                userHelpText + 'Start date can only be between ' +
+                    dateFormatted(_project.startDate) + ' and ' +
+                    dateFormatted(_project.endDate) + ' of the main project.';
+          }
+
+          if (errorEnd == 1) {
+
+            errors = true;
+            if (userHelpText != ''){
+              userHelpText =  userHelpText + '\n\n';
+            }
+            userHelpText =
+                userHelpText + 'End date can only be between ' +
+                    dateFormatted(_project.startDate) + ' and ' +
+                    dateFormatted(_project.endDate) + ' of the main project.';
+          }
+
+
+
+
 
           int diffDays = end.difference(str).inDays;
 
@@ -459,6 +587,7 @@ class TaskPageAddState extends State<TaskPageAdd> {
                             makeEndDate,
                             makeDurationField,
                             makeEstimatedTimeField,
+
                             makeDDPriority,
                             SizedBox(
                               height: 30.0,
@@ -488,8 +617,8 @@ class TaskPageAddState extends State<TaskPageAdd> {
     Alert(
       context: context,
       type: AlertType.success,
-      title: "Sucess",
-      desc: "New task has been created sucessfully!",
+      title: "Success",
+      desc: "New task has been created successfully!",
       buttons: [
         DialogButton(
           child: Text(

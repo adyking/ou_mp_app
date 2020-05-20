@@ -92,10 +92,16 @@ class ServicesAPI {
   // Project
   static const String projectAddUrl =
       'http://www.jteki.com/api/ou_pm/project_add.php';
+  static const String projectUpdateUrl =
+      'http://www.jteki.com/api/ou_pm/project_update.php';
+  static const String projectDeleteUrl =
+      'http://www.jteki.com/api/ou_pm/project_delete.php';
   static const String projectDetailsByIdUrl =
       'http://www.jteki.com/api/ou_pm/getProjectById.php';
   static const String projectDetailsByStudentIdUrl =
       'http://www.jteki.com/api/ou_pm/getProjectsByStudentId.php';
+
+
   static Future<int> addProject(int studentId, String name,
       String description, String category, DateTime startDate,
       DateTime endDate) async {
@@ -116,6 +122,69 @@ class ServicesAPI {
         print(projectJson);
         var lastId = projectJson['Response']['insertedId'];
         return lastId;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> updateProject(int id, String name,
+      String description, String category, DateTime startDate,
+      DateTime endDate) async {
+
+    try {
+      final response = await http.post(projectUpdateUrl,body: {
+        'id' : id.toString(),
+        'name' : name,
+        'description' : description,
+        'category' : category,
+        'startDate' : startDate.toString(),
+        'endDate' : endDate.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var projectJson = json.decode(response.body);
+        print(projectJson);
+        int result = 0;
+
+        if(projectJson['StatusCode']==200){
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> deleteProject(int id) async {
+
+    try {
+      final response = await http.post(projectDeleteUrl,body: {
+        'id' : id.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var projectJson = json.decode(response.body);
+        print(projectJson);
+        int result = 0;
+
+        if(projectJson['StatusCode']==200){
+          result = 1;
+        }
+
+        return result;
       } else {
         return 0;
       }
@@ -173,6 +242,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getTasksByProjectId.php';
   static const String taskDetailsUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_task.php';
+  static const String taskAllocatedHoursUpdateByIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_task_estimate_time.php';
 
 
   static Future<int> addTask(int projectId, String name,
@@ -241,6 +312,34 @@ class ServicesAPI {
 
   }
 
+  static Future<int> updateTaskEstimatedTime(int id, double allocatedHours) async {
+
+    try {
+      final response = await http.post(taskAllocatedHoursUpdateByIdUrl,body: {
+        'id' : id.toString(),
+        'allocatedHours' : allocatedHours.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var taskJson = json.decode(response.body);
+        print(taskJson);
+
+        int result = 0;
+        if(taskJson['StatusCode']==200){
+          result = 1;
+        }
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
   static Future<List<Task>> getTasksByProjectId(
       int projectId) async {
     final response = await http.post(taskDetailsByProjectIdUrl, body: {
@@ -286,7 +385,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getSubtaskById.php';
   static const String subtaskDetailsByTaskIdUrl =
       'http://www.jteki.com/api/ou_pm/getSubtasksByTaskId.php';
-
+  static const String subtaskDetailsUpdateByIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_subtask.php';
 
   static Future<int> addSubtask(int taskId, String name,
       DateTime startDate, DateTime endDate,
@@ -309,6 +409,41 @@ class ServicesAPI {
         print(subtaskJson);
         var lastId = subtaskJson['Response']['insertedId'];
         return lastId;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> updateSubtask(int id, String name,
+      DateTime startDate, DateTime endDate,
+      String duration, String priority, double allocatedHours) async {
+
+    try {
+      final response = await http.post(subtaskDetailsUpdateByIdUrl,body: {
+        'id' : id.toString(),
+        'name' : name,
+        'startDate' : startDate.toString(),
+        'endDate' : endDate.toString(),
+        'duration' : duration,
+        'priority' : priority,
+        'allocatedHours' : allocatedHours.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var taskJson = json.decode(response.body);
+        print(taskJson);
+
+        int result = 0;
+        if(taskJson['StatusCode']==200){
+          result = 1;
+        }
+        return result;
       } else {
         return 0;
       }

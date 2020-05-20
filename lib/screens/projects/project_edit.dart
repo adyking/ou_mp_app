@@ -4,7 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:ou_mp_app/screens/projects/project_details.dart';
 
 
 
@@ -12,9 +12,11 @@ import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 class ProjectPageEdit extends StatefulWidget{
   final int projectId;
 
+
   ProjectPageEdit({Key key, this.projectId}) : super(key :key);
 
-  ProjectPageEditState  createState() => ProjectPageEditState(projectId :projectId);
+  ProjectPageEditState  createState() =>
+      ProjectPageEditState(projectId :projectId);
 }
 
 class ProjectPageEditState extends State<ProjectPageEdit> {
@@ -32,6 +34,7 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
   bool _loaded =false;
+
 
   final projectNameController = TextEditingController();
   final projectDescController = TextEditingController();
@@ -219,6 +222,13 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sStartDate = value;
+
+        });
+
+      },
       controller: projectStartDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -229,6 +239,13 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sEndDate = value;
+
+        });
+
+      },
       controller: projectEndDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -244,7 +261,7 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
         if (projectNameController.text == '') {
           //txtFieldFocus.requestFocus();
           errors = true;
-          userHelpText = userHelpText + 'Projrect name field is required.';
+          userHelpText = userHelpText + 'Project name field is required.';
         }
 
         if (projectStartDateController.text == '') {
@@ -286,9 +303,69 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
       return errors;
     }
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  if (title=='Error') {
+
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          ProjectDetails(projectId: projectId,)),);
+                  }
+
+
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
 
     void editProject () {
-      displaySuccessAlert();
+
+      setState(() {
+
+        ServicesAPI.updateProject(projectId, projectNameController.text,
+            projectDescController.text, sCategory, sStartDate,
+            sEndDate).then((value) {
+
+          if(value !=0) {
+            _showAlertDialog('Info', 'Project hs been updated successfully!');
+          } else {
+            _showAlertDialog('Error', 'Could not update the project details, '
+                'please try again.');
+
+          }
+
+
+        });
+      });
+
+
 
 
     }
@@ -380,8 +457,8 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
     Alert(
       context: context,
       type: AlertType.success,
-      title: "Sucess",
-      desc: "Project has been updated sucessfully!",
+      title: "Success",
+      desc: "Project has been updated successfully!",
       buttons: [
         DialogButton(
           child: Text(

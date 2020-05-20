@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ou_mp_app/models/subtask.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -29,6 +30,7 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
   DateTime sEndDate;
   double sEstimatedTime;
 
+
   final subtaskNameController = TextEditingController();
   final startDateController = TextEditingController();
   final endDateController = TextEditingController();
@@ -42,8 +44,12 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
 
     ServicesAPI.getTaskById(taskId).then((value) {
 
-      _task = value;
+      setState(() {
+        _task = value;
+      });
+
     });
+
 
     sPriority = 'Low';
     sStartDate = DateTime.now();
@@ -345,7 +351,30 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
           sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
 
         if(value !=0) {
-          _showAlertDialog('Info', 'A new stask has been created successfuly for the current task!');
+
+          // Update allocated hours for the main task
+          ServicesAPI.getSubtasksByTaskId(taskId).then((value) {
+              double countTime = 0.0;
+              for(var i=0; i < value.length; i++){
+
+                countTime = countTime + value[i].allocatedHours;
+
+              }
+
+              ServicesAPI.updateTaskEstimatedTime(taskId, countTime).then((value) {
+                if (value != 0) {
+                  _showAlertDialog(
+                      'Info', 'A new subtask has been created successfully '
+                      'for the current task!');
+                }
+              });
+
+          });
+
+
+        } else {
+          _showAlertDialog('Error', 'Could not create a subtask, please try again.');
+
         }
 
 
@@ -546,7 +575,7 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
     );
   }
 
-  void diplaySuccessAlert() {
+  void displaySuccessAlert() {
     Alert(
       context: context,
       type: AlertType.success,

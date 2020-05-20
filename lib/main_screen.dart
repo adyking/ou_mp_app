@@ -28,6 +28,8 @@ class MainScreenState extends State<MainScreen>{
   final colorActive = BottomBarColorActive;
   final colorInactive = BottomBarColorInactive;
   Student student;
+  bool _loading = true;
+  bool _showPage = false;
 
   MainScreenState({Key key, this.selectedScreen, this.studentId});
 
@@ -39,7 +41,8 @@ class MainScreenState extends State<MainScreen>{
       ServicesAPI.getStudentById(studentId).then((value) {
         setState(() {
           student = value;
-
+          _loading = false;
+          _showPage = true;
           if (student==null){
 
             Navigator.push(
@@ -71,7 +74,15 @@ class MainScreenState extends State<MainScreen>{
     onWillPop: () async => false,
     child: Scaffold(
 
-      body: student == null ? _screenOption[0] : _screenOption[selectedScreen],
+      body: Visibility(
+        visible: _showPage,
+        child: Container(
+
+          child: student == null ? _screenOption[0] : _screenOption[selectedScreen],
+        ),
+      ),
+
+      //student == null ? _screenOption[0] : _screenOption[selectedScreen],
 
       backgroundColor: Colors.grey[200],
       bottomNavigationBar: BottomNavigationBar(

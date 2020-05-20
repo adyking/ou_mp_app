@@ -12,6 +12,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
 import '../../main_screen.dart';
 import 'package:ou_mp_app/models/task.dart';
+import 'package:ou_mp_app/main_screen.dart';
 
 class ProjectDetails extends StatefulWidget{
 
@@ -89,7 +90,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
   final double _currentProgress = 0.25;
   final  _calProgress = _currentProgress * 100;
   final _progress = _calProgress.toInt();
-//  final _name = 'jjjj';
+
 
   String dateFormatted (DateTime dt) {
 
@@ -228,6 +229,137 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
   );
 
+  Future<void> _showAlertDialog(String title, String msg) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$title'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('$msg'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+
+                setState(() {
+                  if (title=='Error') {
+
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          MainScreen(tabIndex: 1,studentId: _student.id,)),);
+                  }
+
+
+                });
+
+
+
+
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Future<void> _showAlertConfirmDialog(String title, String msg) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$title'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('$msg'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('YES'),
+              onPressed: () {
+              //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteProject(_project.id).then((value) {
+
+                    if(value==1){
+                      var msg = '' + _project.name + ' has been deleted successfully!';
+                      _showAlertDialog('Info', msg);
+                    } else {
+                      var msg = 'Could not delete ' + _project.name + ', please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+               // });
+              },
+            ),
+
+            FlatButton(
+              child: Text('NO'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  showAlertConfirmDialog(BuildContext context, String projectName) {
+
+    // set up the buttons
+    Widget noButton = FlatButton(
+      child: Text('NO'),
+      onPressed:  () {
+
+        Navigator.pop(context);
+
+      },
+    );
+    Widget yesButton = FlatButton(
+      child: Text('YES'),
+      onPressed:  () {
+
+
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text('Confirm'),
+      content: Text('Are you sure you want to delete ' + projectName + '?'),
+      actions: [
+        noButton,
+        yesButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
 
 
 
@@ -241,15 +373,27 @@ class ProjectDetailsState extends State<ProjectDetails> {
           IconButton(
             icon: Icon(Icons.mode_edit),
             onPressed: () {
+                setState(() {
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProjectPageEdit(projectId: projectId,)),);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        ProjectPageEdit(projectId: projectId,)),);
+                });
+
             },
           ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+              setState(() {
+
+                var msg = 'Are you sure you want to delete ' + _project.name + '?';
+                _showAlertConfirmDialog('Confirm', msg);
+               // showAlertConfirmDialog(context, _project.name);
+
+
+              });
             },
           ),
 
