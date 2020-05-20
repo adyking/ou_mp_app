@@ -171,6 +171,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getTaskById.php';
   static const String taskDetailsByProjectIdUrl =
       'http://www.jteki.com/api/ou_pm/getTasksByProjectId.php';
+  static const String taskDetailsUpdateByIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_task.php';
 
 
   static Future<int> addTask(int projectId, String name,
@@ -194,6 +196,41 @@ class ServicesAPI {
         print(taskJson);
         var lastId = taskJson['Response']['insertedId'];
         return lastId;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> updateTask(int id, String name,
+      DateTime startDate, DateTime endDate,
+      String duration, String priority, double allocatedHours) async {
+
+    try {
+      final response = await http.post(taskDetailsUpdateByIdUrl,body: {
+        'id' : id.toString(),
+        'name' : name,
+        'startDate' : startDate.toString(),
+        'endDate' : endDate.toString(),
+        'duration' : duration,
+        'priority' : priority,
+        'allocatedHours' : allocatedHours.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var taskJson = json.decode(response.body);
+        print(taskJson);
+
+        int result = 0;
+        if(taskJson['StatusCode']==200){
+          result = 1;
+        }
+        return result;
       } else {
         return 0;
       }
@@ -246,7 +283,7 @@ class ServicesAPI {
   static const String subtaskAddUrl =
       'http://www.jteki.com/api/ou_pm/subtask_add.php';
   static const String subtaskDetailsByIdUrl =
-      'http://www.jteki.com/api/ou_pm/getTaskById.php';
+      'http://www.jteki.com/api/ou_pm/getSubtaskById.php';
   static const String subtaskDetailsByTaskIdUrl =
       'http://www.jteki.com/api/ou_pm/getSubtasksByTaskId.php';
 

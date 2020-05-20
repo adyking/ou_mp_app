@@ -7,10 +7,17 @@ import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class SubTaskPageEdit extends StatefulWidget {
-  SubTaskPageEditState createState() => SubTaskPageEditState();
+  final int id;
+
+  SubTaskPageEdit({Key key, this.id}) : super(key:key);
+
+  SubTaskPageEditState createState() => SubTaskPageEditState(id: id);
 }
 
 class SubTaskPageEditState extends State<SubTaskPageEdit> {
+  final int id;
+  SubTaskPageEditState({Key key, this.id});
+
   String appBarTitle = 'Edit Subtask';
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
@@ -124,6 +131,8 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
         if (n == null) {
           estimatedTimeController.text = '0.0';
         }
+
+
       });
     }
 

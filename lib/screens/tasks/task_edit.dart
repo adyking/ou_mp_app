@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class TaskPageEdit extends StatefulWidget {
-  TaskPageEditState createState() => TaskPageEditState();
+  final int id;
+
+  TaskPageEdit({Key key, this.id}) : super(key:key);
+
+  TaskPageEditState createState() => TaskPageEditState(id:id);
 }
 
 class TaskPageEditState extends State<TaskPageEdit> {
+  final int id;
+  TaskPageEditState({Key key, this.id});
+
   String appBarTitle = 'Edit Task';
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
+  String sPriority;
   DateTime sStartDate;
   DateTime sEndDate;
+  double sEstimatedTime;
+  bool _loaded =false;
 
   final taskNameController = TextEditingController();
   final startDateController = TextEditingController();
@@ -28,20 +40,31 @@ class TaskPageEditState extends State<TaskPageEdit> {
 
   @override
   void initState() {
-    super.initState();
 
     // Start listening to changes.
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
 
-    taskNameController.text = 'Read module material.';
-    appBarTitle = 'Read module material.';
+    ServicesAPI.getTaskById(id).then((value) {
+      setState(() {
+        taskNameController.text = value.name;
+        appBarTitle = value.name;
 
-    durationController.text = '3 days';
-    estimatedTimeController.text = '2.0';
+        durationController.text = value.duration;
+        estimatedTimeController.text = value.allocatedHours.toString();
 
-    sStartDate = new DateFormat("dd-MM-yyyy").parse('09-02-2020');
-    sEndDate = new DateFormat("dd-MM-yyyy").parse('12-02-2020');
+        sStartDate = value.startDate;
+        sEndDate = value.endDate;
+        sPriority = value.priority;
+
+        _loaded = true;
+      });
+
+    });
+
+
+
+    super.initState();
   }
 
   @override
@@ -119,6 +142,7 @@ class TaskPageEditState extends State<TaskPageEdit> {
         if(n == null) {
           estimatedTimeController.text = '0.0';
         }
+        sEstimatedTime = double.parse(estimatedTimeController.text);
 
       });
 
@@ -201,6 +225,32 @@ class TaskPageEditState extends State<TaskPageEdit> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sStartDate = value;
+        setState(() {
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: startDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -210,6 +260,33 @@ class TaskPageEditState extends State<TaskPageEdit> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sEndDate = value;
+
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: endDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -218,9 +295,71 @@ class TaskPageEditState extends State<TaskPageEdit> {
       decoration: InputDecoration(labelText: "End date*"),
     );
 
+
+    final makeDDPriority = FormBuilderDropdown(
+      onChanged: (value) {
+        setState(() {
+          sPriority = value;
+        });
+
+      },
+      attribute: "priority",
+      decoration: InputDecoration(labelText: "Priority"
+
+      ),
+      initialValue: sPriority,
+      hint: Text('Select priority'),
+      validators: [FormBuilderValidators.required()],
+      items: ['Low', 'Medium', 'High']
+          .map((priority) => DropdownMenuItem(
+          value: priority,
+          child: Text("$priority")
+      )).toList(),
+    );
+
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        TaskDetails(id: id,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     void editTask() {
 
-      displaySuccessAlert();
+      ServicesAPI.updateTask(id, taskNameController.text, sStartDate,
+          sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
+
+        if(value !=0) {
+          _showAlertDialog('Info', 'Task has been updated successfuly!');
+        }
+
+
+      });
 
     }
 
@@ -328,17 +467,26 @@ class TaskPageEditState extends State<TaskPageEdit> {
                         padding: const EdgeInsets.all(10.0),
                         child: Column(
                           children: <Widget>[
-                            makeTaskField,
-                            makeStartDate,
-                            makeEndDate,
-                            makeDurationField,
-                            makeEstimatedTimeField,
-                            SizedBox(
-                              height: 30.0,
-                            ),
-                            Row(
-                              children: <Widget>[Text('* required field')],
-                            ),
+                            Visibility(
+                              visible: _loaded == true ? true : false,
+                              child: Column(
+                                children: <Widget>[
+                                  makeTaskField,
+                                  makeStartDate,
+                                  makeEndDate,
+                                  makeDurationField,
+                                  makeEstimatedTimeField,
+                                  makeDDPriority,
+                                  SizedBox(
+                                    height: 30.0,
+                                  ),
+                                  Row(
+                                    children: <Widget>[Text('* required field')],
+                                  ),
+                                ],
+                              ),
+                            )
+
                           ],
                         ),
                       ),

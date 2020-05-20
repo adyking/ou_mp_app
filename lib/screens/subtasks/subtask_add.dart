@@ -400,10 +400,30 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
           DateTime end =
           new DateFormat("dd-MM-yyyy").parse(endDateController.text);
 
-          int diffStartDays = _task.startDate.difference(str).inDays;
-          int diffEndDays = _task.endDate.difference(end).inDays;
+          int errorStart = 0;
+          int errorEnd = 0;
+          int diffStartDays = str.difference(_task.startDate).inDays;
+          int diffStartEndDays = str.difference(_task.endDate).inDays;
+          int diffEndDays = end.difference(_task.endDate).inDays;
+          int diffEndStartDays = end.difference(_task.startDate).inDays;
 
           if (diffStartDays < 0) {
+            errorStart = 1;
+          }
+
+          if (diffStartEndDays > 0) {
+            errorStart = 1;
+          }
+
+          if (diffEndDays > 0) {
+            errorEnd = 1;
+          }
+
+          if (diffEndStartDays < 0) {
+            errorEnd = 1;
+          }
+
+          if (errorStart == 1) {
 
             errors = true;
             if (userHelpText != ''){
@@ -415,7 +435,7 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
                     dateFormatted(_task.endDate) + ' of the main task.';
           }
 
-          if (diffEndDays < 0) {
+          if (errorEnd == 1) {
 
             errors = true;
             if (userHelpText != ''){

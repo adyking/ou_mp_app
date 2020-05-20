@@ -34,6 +34,8 @@ class TaskDetailsState extends State<TaskDetails> {
   bool _showPage = false;
   bool completed = false;
   List<Subtask> _subtasksList = List<Subtask>();
+  String _projectName;
+  String _projectDates;
 
   @override
   void initState() {
@@ -42,6 +44,20 @@ class TaskDetailsState extends State<TaskDetails> {
 
       setState(() {
         _task = value;
+
+        ServicesAPI.getProjectById(_task.projectId).then((value) {
+
+          setState(() {
+
+            _projectName = value.name;
+
+            var formattedStartDate =  DateFormat.yMMMd('en_US').format(value.startDate);
+            var formattedEndDate =  DateFormat.yMMMd('en_US').format(value.endDate);
+
+            _projectDates = formattedStartDate + ' - ' + formattedEndDate;
+          });
+
+        });
 
         ServicesAPI.getSubtasksByTaskId(id).then((value) {
             setState(() {
@@ -127,10 +143,49 @@ class TaskDetailsState extends State<TaskDetails> {
                 ),
                 SizedBox(width: 10.0,),
                 Text(_task == null ? '' :
-                _task.allocatedHours.toString().replaceAll('.0', '') + ' hours' ,),
+                _task.allocatedHours.toString().replaceAll('.0', '') + ' hour(s)' ,),
               ],
             ),
             SizedBox(height: 10.0,),
+            Row(
+              children: <Widget>[
+                Icon(Icons.format_list_numbered, color: Colors.grey
+                ),
+                SizedBox(width: 10.0,),
+                Text(_subtasksList == null ? '' :
+                _subtasksList.length.toString() + ' Subtask(s)' ,),
+              ],
+            ),
+            SizedBox(height: 10.0,),
+            Row(
+              children: <Widget>[
+                Icon(Icons.priority_high, color: Colors.grey
+                ),
+                SizedBox(width: 10.0,),
+                Text(_task == null ? '' : _task.priority,),
+              ],
+            ),
+
+            SizedBox(height: 10.0,),
+            Padding(
+              padding: const EdgeInsets.only(left: 5),
+              child: Row(
+                children: <Widget>[
+                  Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
+                  SizedBox(width: 10.0,),
+                  Text('In progress'),
+                  SizedBox(width: 10.0,),
+                  Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
+                  SizedBox(width: 10.0,),
+                  Text('Completed'),
+                  SizedBox(width: 10.0,),
+                  Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
+                  SizedBox(width: 10.0,),
+                  Text('Overdue'),
+                ],
+              ),
+            ),
+            SizedBox(height: 15.0,),
             LinearPercentIndicator(
               // width: MediaQuery.of(context).size.width - 40,
               animation: true,
@@ -229,9 +284,9 @@ class TaskDetailsState extends State<TaskDetails> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Task'),
-            Text(_projectTitle + ' | ' + _dateFromTo, style: TextStyle(
-              fontSize: 14.0,
-            ),),
+            Text(_projectName  == null ? '' : _projectName
+            ),
+
           ],
         ),
 
@@ -244,7 +299,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TaskPageEdit()),);
+                MaterialPageRoute(builder: (context) => TaskPageEdit(id: id,)),);
             },
           ),
           IconButton(
@@ -413,7 +468,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
       height: hTasks,
       child: ListView.builder(
-
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: _subtasksList.length,
         itemBuilder: (context, index) {
 
@@ -451,7 +506,8 @@ class TaskDetailsState extends State<TaskDetails> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SubtaskDetails(id:subtasksId[index])),);
+                      MaterialPageRoute(builder: (context) =>
+                          SubtaskDetails(id:_subtasksList[index].id,taskName: _task.name,)),);
                   },
                   // leading: Container(width: 10, color: Colors.red,),
 

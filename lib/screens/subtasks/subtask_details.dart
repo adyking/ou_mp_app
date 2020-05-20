@@ -1,25 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/subtask.dart';
+import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_edit.dart';
 import 'package:ou_mp_app/style.dart';
-
+import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:intl/intl.dart';
 
 class SubtaskDetails extends StatefulWidget{
 final int id;
+final String taskName;
 
-SubtaskDetails({Key key, this.id}) : super (key:key);
+SubtaskDetails({Key key, this.id, this.taskName}) : super (key:key);
 
-  SubtaskDetailsState  createState() => SubtaskDetailsState(id: id);
+  SubtaskDetailsState  createState() => SubtaskDetailsState(id: id,taskName: taskName);
 }
 
 class SubtaskDetailsState extends State<SubtaskDetails> {
   bool completed = false;
   final int id;
+  final String taskName;
+  Subtask _subtask;
 
-  SubtaskDetailsState({Key key, this.id});
+  SubtaskDetailsState({Key key, this.id, this.taskName});
 
 
   @override
   void initState() {
+
+
+
+    ServicesAPI.getSubtaskById(id).then((value) {
+
+      setState(() {
+
+        _subtask = value;
+
+        if(_subtask.status==1){
+          completed = true;
+        }
+
+
+      });
+
+    });
+
+
     super.initState();
 
   }
@@ -43,6 +68,14 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
     // print(id.toString());
 
 
+    String dateFormatted (DateTime dt) {
+
+      var formattedDate =  DateFormat.yMMMd('en_US').format(dt);
+
+      return formattedDate;
+
+    }
+
     final makeSubtaskDetailHeader = Container(
       color: Colors.white,
       child: Padding(
@@ -57,7 +90,7 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
                 Icon(Icons.assignment, color: Colors.grey
                 ),
                 SizedBox(width: 10.0,),
-                Text(_subtaskName,),
+                Text(_subtask == null ? '' : _subtask.name,),
               ],
             ),
             SizedBox(height: 10.0,),
@@ -67,7 +100,8 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
                 Icon(Icons.date_range, color: Colors.grey
                 ),
                 SizedBox(width: 10.0,),
-                Text(_subtaskDateFromTo,),
+                Text(_subtask == null ? '' : dateFormatted(_subtask.startDate) + ' - ' +
+                    dateFormatted(_subtask.endDate),),
               ],
             ),
             SizedBox(height: 10.0,),
@@ -76,16 +110,17 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
                 Icon(Icons.access_time, color: Colors.grey
                 ),
                 SizedBox(width: 10.0,),
-                Text(_duration,),
+                Text(_subtask == null ? '' :
+                _subtask.allocatedHours.toString().replaceAll('.0', '') + ' hour(s)' ,),
               ],
             ),
             SizedBox(height: 10.0,),
             Row(
               children: <Widget>[
-                Icon(Icons.access_time, color: Colors.grey
+                Icon(Icons.priority_high, color: Colors.grey
                 ),
                 SizedBox(width: 10.0,),
-                Text(_priority,),
+                Text(_subtask == null ? '' : _subtask.priority,),
               ],
             ),
 
@@ -154,7 +189,7 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Subtask'),
-            Text(_taskName, style: TextStyle(
+            Text(taskName == null ? '' : taskName, style: TextStyle(
               fontSize: 14.0,
             ),),
           ],

@@ -170,6 +170,35 @@ class ProjectDetailsState extends State<ProjectDetails> {
               Text(_student == null ? '' : _student.name,),
             ],
           ),
+          SizedBox(height: 10.0,),
+          Row(
+            children: <Widget>[
+              Icon(Icons.format_list_numbered, color: Colors.grey
+              ),
+              SizedBox(width: 10.0,),
+              Text(_tasksList == null ? '' :
+              _tasksList.length.toString() + ' Task(s)' ,),
+            ],
+          ),
+          SizedBox(height: 10.0,),
+          Padding(
+            padding: const EdgeInsets.only(left: 5),
+            child: Row(
+              children: <Widget>[
+                Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
+                SizedBox(width: 10.0,),
+                Text('In progress'),
+                SizedBox(width: 10.0,),
+                Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
+                SizedBox(width: 10.0,),
+                Text('Completed'),
+                SizedBox(width: 10.0,),
+                Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
+                SizedBox(width: 10.0,),
+                Text('Overdue'),
+              ],
+            ),
+          ),
 
         ],
 
