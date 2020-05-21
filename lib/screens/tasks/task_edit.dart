@@ -53,7 +53,7 @@ class TaskPageEditState extends State<TaskPageEdit> {
 
         durationController.text = value.duration;
         estimatedTimeController.text = value.allocatedHours.toString();
-
+        sEstimatedTime = value.allocatedHours;
         sStartDate = value.startDate;
         sEndDate = value.endDate;
         sPriority = value.priority;
@@ -418,7 +418,7 @@ class TaskPageEditState extends State<TaskPageEdit> {
           sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
 
         if(value !=0) {
-          _showAlertDialog('Info', 'Task has been updated successfuly!');
+          _showAlertDialog('Info', 'Task has been updated successfully!');
         }
 
 

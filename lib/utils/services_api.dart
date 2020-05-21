@@ -387,6 +387,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getSubtasksByTaskId.php';
   static const String subtaskDetailsUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_subtask.php';
+  static const String subtaskUpdateStatusByIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_subtask_status.php';
 
   static Future<int> addSubtask(int taskId, String name,
       DateTime startDate, DateTime endDate,
@@ -436,11 +438,39 @@ class ServicesAPI {
 
       if (response.statusCode == 200){
 
-        var taskJson = json.decode(response.body);
-        print(taskJson);
+        var subtaskJson = json.decode(response.body);
+        print(subtaskJson);
 
         int result = 0;
-        if(taskJson['StatusCode']==200){
+        if(subtaskJson['StatusCode']==200){
+          result = 1;
+        }
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> updateSubtaskStatus(int id, int status) async {
+
+    try {
+      final response = await http.post(subtaskUpdateStatusByIdUrl,body: {
+        'id' : id.toString(),
+        'status' : status.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var subtaskJson = json.decode(response.body);
+        print(subtaskJson);
+
+        int result = 0;
+        if(subtaskJson['StatusCode']==200){
           result = 1;
         }
         return result;

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:ou_mp_app/models/subtask.dart';
 import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_edit.dart';
+import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 
 class SubtaskDetails extends StatefulWidget{
 final int id;
@@ -76,6 +78,36 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
 
     }
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.pop(context);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
     final makeSubtaskDetailHeader = Container(
       color: Colors.white,
       child: Padding(
@@ -140,6 +172,44 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
       onChanged: (bool value) {
         setState(() {
           completed = value;
+
+          StorageUtil.putBool('RefreshTaskDetails', true);
+
+          int status;
+          if(completed){
+            status = 1;
+
+          } else {
+            status = 0;
+            DateTime today = DateTime.now();
+
+            int diffDays = today.difference(_subtask.endDate).inDays;
+
+            if (diffDays > 0) {
+              status = 2; // overdue
+            }
+
+          }
+
+          ServicesAPI.updateSubtaskStatus(id, status).then((value) {
+            if(value==1){
+              //success
+              var statusText;
+              if (status==1){
+                statusText = 'completed.';
+              } else {
+                if(status==2){
+                  statusText = 'overdue since the end date for this subtask has passed.';
+                } else {
+                  statusText = 'in progress.';
+                }
+
+              }
+              var msg = 'Subtask has been updated and marked as ' + statusText;
+              _showAlertDialog('Info', msg);
+            }
+
+          });
         });
       },
 
@@ -181,8 +251,6 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
 
 
 
-
-
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -201,14 +269,28 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
           IconButton(
             icon: Icon(Icons.mode_edit),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SubTaskPageEdit()),);
+
+              setState(() {
+
+                if (completed){
+                  var msg = 'Cannot edit this subtask because is marked as completed.';
+                  _showAlertDialog('Alert', msg);
+
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SubTaskPageEdit(id: id,)),);
+                }
+
+              });
+
+
             },
           ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+
             },
           ),
 

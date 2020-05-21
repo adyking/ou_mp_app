@@ -57,6 +57,7 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
         durationController.text = value.duration;
         estimatedTimeController.text = value.allocatedHours.toString();
         pvEstimatedTime = value.allocatedHours;
+        sEstimatedTime = value.allocatedHours;
         sPriority = value.priority;
         sStartDate = value.startDate;
         sEndDate = value.endDate;
@@ -74,13 +75,6 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     txtFieldFocus.addListener(_setColorFocus);
     txtFieldFocusDesc.addListener(_setColorFocus);
     super.initState();
-
-
-
-
-
-
-
 
   }
 
@@ -159,7 +153,7 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
           estimatedTimeController.text = '0.0';
         }
 
-
+        sEstimatedTime = double.parse(estimatedTimeController.text);
       });
     }
 
@@ -236,6 +230,32 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     );
 
     final makeStartDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        sStartDate = value;
+        setState(() {
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: startDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -245,6 +265,33 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     );
 
     final makeEndDate = FormBuilderDateTimePicker(
+      onChanged: (value){
+        setState(() {
+          sEndDate = value;
+
+          if (sStartDate != null && sEndDate != null) {
+            DateTime str = sStartDate;
+            //new DateFormat("dd-MM-yyyy").parse(startDateController.text);
+            DateTime end = sEndDate;
+            //new DateFormat("dd-MM-yyyy").parse(endDateController.text);
+
+            int diffDays = end.difference(str).inDays;
+
+            if (diffDays < 0) {
+
+            } else {
+              if (diffDays==1) {
+                durationController.text = diffDays.toString() + ' day';
+              }else{
+                durationController.text = diffDays.toString() + ' days';
+              }
+
+            }
+          }
+
+        });
+
+      },
       controller: endDateController,
       attribute: "date",
       inputType: InputType.date,
@@ -305,7 +352,7 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     void editSubtask() {
 
 
-      ServicesAPI.updateTask(id, subtaskNameController.text, sStartDate,
+      ServicesAPI.updateSubtask(id, subtaskNameController.text, sStartDate,
           sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
 
         if(value !=0) {
@@ -379,6 +426,8 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
             userHelpText = userHelpText + '\n\n';
           }
           userHelpText = userHelpText + 'Estimated time field is required.';
+        } else {
+          sEstimatedTime = double.parse(estimatedTimeController.text);
         }
 
         if (startDateController.text != '' && endDateController.text != '') {
@@ -411,7 +460,7 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          appBarTitle,
+          appBarTitle == null ? '' : appBarTitle,
           style: AppBarTheme.of(context).textTheme.title,
         ),
         backgroundColor: AppBarBackgroundColor,
@@ -421,7 +470,7 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
             icon: Icon(Icons.check),
             onPressed: () {
               userHelpText = '';
-              print(sPriority);
+             // print(sPriority);
               bool errors = false;
               errors = checkFields();
 
@@ -450,18 +499,27 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
                         padding: const EdgeInsets.all(10.0),
                         child: Column(
                           children: <Widget>[
-                            makeTaskField,
-                            makeStartDate,
-                            makeEndDate,
-                            makeDurationField,
-                            makeEstimatedTimeField,
-                            makeDDPriority,
-                            SizedBox(
-                              height: 30.0,
+                            Visibility(
+                              visible: _loaded == true ? true : false,
+                              child: Column(
+                                children: <Widget>[
+                                  makeTaskField,
+                                  makeStartDate,
+                                  makeEndDate,
+                                  makeDurationField,
+                                  makeEstimatedTimeField,
+                                  makeDDPriority,
+                                  SizedBox(
+                                    height: 30.0,
+                                  ),
+                                  Row(
+                                    children: <Widget>[Text('* required field')],
+                                  ),
+                                ],
+                              ),
                             ),
-                            Row(
-                              children: <Widget>[Text('* required field')],
-                            ),
+
+
                           ],
                         ),
                       ),
@@ -484,8 +542,8 @@ class SubTaskPageEditState extends State<SubTaskPageEdit> {
     Alert(
       context: context,
       type: AlertType.success,
-      title: "Sucess",
-      desc: "Subtask has been edited sucessfully!",
+      title: "Success",
+      desc: "Subtask has been edited successfully!",
       buttons: [
         DialogButton(
           child: Text(

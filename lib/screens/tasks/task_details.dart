@@ -6,10 +6,12 @@ import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
 import 'package:ou_mp_app/screens/tasks/task_edit.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/models/subtask.dart';
 import 'package:intl/intl.dart';
+
 
 
 class TaskDetails extends StatefulWidget{
@@ -28,6 +30,7 @@ class TaskDetailsState extends State<TaskDetails> {
   Task _task;
 
 
+
   TaskDetailsState({Key key, this.id});
 
   bool _loading = true;
@@ -35,11 +38,27 @@ class TaskDetailsState extends State<TaskDetails> {
   bool completed = false;
   List<Subtask> _subtasksList = List<Subtask>();
   String _projectName;
+  int nInProgress = 0;
+  int nCompleted = 0;
+  int nOverdue = 0;
   String _projectDates;
 
   @override
   void initState() {
 
+    loadData();
+    super.initState();
+
+  }
+
+  @override
+  void dispose() {
+
+    super.dispose();
+  }
+
+
+  loadData() async {
     ServicesAPI.getTaskById(id).then((value) {
 
       setState(() {
@@ -60,11 +79,44 @@ class TaskDetailsState extends State<TaskDetails> {
         });
 
         ServicesAPI.getSubtasksByTaskId(id).then((value) {
-            setState(() {
-              _subtasksList.addAll(value);
-              _loading = false;
-              _showPage = true;
-            });
+          setState(() {
+            if(_subtasksList.length>0){
+              nInProgress = 0;
+              nCompleted = 0;
+              nOverdue = 0;
+              _subtasksList.removeRange(0, _subtasksList.length);
+            }
+            _subtasksList.addAll(value);
+
+            for(var i=0; i < _subtasksList.length; i++){
+
+              switch(_subtasksList[i].status) {
+                case 0 : {
+                  nInProgress = nInProgress + 1;
+                }
+                break;
+
+                case 1: {
+                  nCompleted = nCompleted + 1;
+                }
+                break;
+
+                case 2: {
+                  nOverdue = nOverdue + 1;
+                }
+                break;
+
+                default: {
+                  //
+                }
+                break;
+              }
+
+            }
+
+            _loading = false;
+            _showPage = true;
+          });
 
         });
 
@@ -75,14 +127,6 @@ class TaskDetailsState extends State<TaskDetails> {
 
     });
 
-    super.initState();
-
-  }
-
-  @override
-  void dispose() {
-
-    super.dispose();
   }
 
 
@@ -170,18 +214,19 @@ class TaskDetailsState extends State<TaskDetails> {
             Padding(
               padding: const EdgeInsets.only(left: 5),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 10.0,),
-                  Text('In progress'),
-                  SizedBox(width: 10.0,),
+                  SizedBox(width: 5.0,),
+                  Text('In progress' + ' (' + nInProgress.toString() + ')'),
+                  SizedBox(width: 5.0,),
                   Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 10.0,),
-                  Text('Completed'),
-                  SizedBox(width: 10.0,),
+                  SizedBox(width: 5.0,),
+                  Text('Completed' + ' (' + nCompleted.toString() + ')'),
+                  SizedBox(width: 5.0,),
                   Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 10.0,),
-                  Text('Overdue'),
+                  SizedBox(width: 5.0,),
+                  Text('Overdue'+ ' (' + nOverdue.toString() + ')'),
                 ],
               ),
             ),
@@ -296,15 +341,23 @@ class TaskDetailsState extends State<TaskDetails> {
           IconButton(
             icon: Icon(Icons.mode_edit),
             onPressed: () {
+              if(completed){
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TaskPageEdit(id: id,)),);
+
+
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TaskPageEdit(id: id,)),);
+              }
+
             },
           ),
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+
+
             },
           ),
 
@@ -504,10 +557,26 @@ class TaskDetailsState extends State<TaskDetails> {
                     ],
                   ),
                   onTap: () {
+
+                    _loading = true;
+                   _showPage = false;
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) =>
-                          SubtaskDetails(id:_subtasksList[index].id,taskName: _task.name,)),);
+                     MaterialPageRoute(builder: (context) =>
+                          SubtaskDetails(id:_subtasksList[index].id,taskName: _task.name,)),).then((value) {
+
+
+                            bool refresh = StorageUtil.getBool('RefreshTaskDetails');
+
+                            if(refresh){
+                              StorageUtil.removeKey('RefreshTaskDetails');
+                              setState(() {
+                                loadData();
+                              });
+                            }
+
+
+                    });
                   },
                   // leading: Container(width: 10, color: Colors.red,),
 
