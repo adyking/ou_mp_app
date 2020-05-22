@@ -35,6 +35,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
   bool _loading = true;
   bool _showPage = false;
+  bool _showStatus = true;
   bool completed = false;
   List<Subtask> _subtasksList = List<Subtask>();
   String _projectName;
@@ -42,9 +43,12 @@ class TaskDetailsState extends State<TaskDetails> {
   int nCompleted = 0;
   int nOverdue = 0;
   String _projectDates;
+  double _currentProgress = 0.0 ;
+  int  _currentProgressPercentage = 0;
 
   @override
   void initState() {
+
 
     loadData();
     super.initState();
@@ -63,6 +67,10 @@ class TaskDetailsState extends State<TaskDetails> {
 
       setState(() {
         _task = value;
+
+        if(_task.status==1){
+          completed = true;
+        }
 
         ServicesAPI.getProjectById(_task.projectId).then((value) {
 
@@ -88,6 +96,12 @@ class TaskDetailsState extends State<TaskDetails> {
             }
             _subtasksList.addAll(value);
 
+            if(_subtasksList.length>0){
+              _showStatus = false;
+            }
+
+            int countCompleted = 0;
+
             for(var i=0; i < _subtasksList.length; i++){
 
               switch(_subtasksList[i].status) {
@@ -98,6 +112,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
                 case 1: {
                   nCompleted = nCompleted + 1;
+                  countCompleted = countCompleted + 1;
                 }
                 break;
 
@@ -113,6 +128,48 @@ class TaskDetailsState extends State<TaskDetails> {
               }
 
             }
+
+
+
+            if(_subtasksList.length==countCompleted){
+              // update main task status
+              ServicesAPI.updateTaskStatus(id, 1).then((value) {
+
+              });
+
+            } else {
+
+              DateTime today = DateTime.now();
+              int status = 0;
+              int diffDays = today.difference(_task.endDate).inDays;
+
+              if (diffDays > 0) {
+                status = 2;
+              }
+
+              ServicesAPI.updateTaskStatus(id, status).then((value) {
+
+              });
+
+            }
+
+            if (_subtasksList.length!=0){
+              int total = 0;
+              total =_subtasksList.length.toInt();
+              _currentProgress = nCompleted / total;
+              num percentage = (_currentProgress * 100).round();
+              _currentProgressPercentage = percentage;
+            } else {
+
+              if (completed){
+
+                _currentProgress = 1 ;
+                num percentage = (_currentProgress * 100).round();
+                _currentProgressPercentage = percentage;
+              }
+
+            }
+
 
             _loading = false;
             _showPage = true;
@@ -133,15 +190,7 @@ class TaskDetailsState extends State<TaskDetails> {
   @override
   Widget build(BuildContext context) {
 
-    final _projectTitle = 'TM470 Project';
-    final _taskName = 'Read module material.';
-    final double _taskDuration = 2.0;
-    final  _duration = _taskDuration.toString().replaceAll('.0', '') + ' hours';
-    final _dateFromTo = 'Feb 08 - Sept 14';
-    final _taskDateFromTo = 'Feb 09, 2020 - Feb 12, 2020';
-    final double _currentProgress = 0.15;
-    final  _calProgress = _currentProgress * 100;
-    final _progress = _calProgress.toInt();
+
 
 
     String dateFormatted (DateTime dt) {
@@ -238,11 +287,11 @@ class TaskDetailsState extends State<TaskDetails> {
               animationDuration: 2500,
               percent: _currentProgress,
               // trailing: Icon(Icons.flag),
-              center: Text(_progress.toString() +'%', style: TextStyle(
+              center: Text(_currentProgressPercentage.toString() +'%', style: TextStyle(
                   fontSize: 12.0
               ),),
               linearStrokeCap: LinearStrokeCap.roundAll,
-              progressColor: Color(0xff326fb4),
+              progressColor: completed ? Colors.green :  Color(0xff326fb4),
               backgroundColor: Colors.grey[300],
             ),
 
@@ -255,14 +304,136 @@ class TaskDetailsState extends State<TaskDetails> {
 
     );
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.pop(context);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Future<void> _showDeleteAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context)
+                    => ProjectDetails(projectId: _task.projectId,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
 
 
     final makeCompletedCheckBox = Checkbox(
         value: completed,
          onChanged: (bool value) {
-          setState(() {
-          completed = value;
-        });
+           setState(() {
+             completed = value;
+
+             if(completed==false){
+
+               _currentProgress =  0;
+               num percentage = (_currentProgress * 100).round();
+               _currentProgressPercentage = percentage;
+
+
+             } else {
+               _currentProgress =  1;
+               num percentage = (_currentProgress * 100).round();
+               _currentProgressPercentage = percentage;
+
+             }
+
+
+             StorageUtil.putBool('RefreshProjectDetails', true);
+
+             int status;
+             if(completed){
+               status = 1;
+
+             } else {
+               status = 0;
+               DateTime today = DateTime.now();
+
+               int diffDays = today.difference(_task.endDate).inDays;
+
+               if (diffDays > 0) {
+                 status = 2; // overdue
+               }
+
+             }
+
+             ServicesAPI.updateTaskStatus(id, status).then((value) {
+               setState(() {
+
+                 if(value==1){
+                   //success
+                   var statusText;
+                   if (status==1){
+                     statusText = 'completed.';
+                   } else {
+                     if(status==2){
+                       statusText = 'overdue since the end date for this task has passed.';
+                     } else {
+                       statusText = 'in progress.';
+                     }
+
+                   }
+
+
+
+
+                   var msg = 'Task has been updated and marked as ' + statusText;
+                   _showAlertDialog('Info', msg);
+                 }
+
+               });
+
+
+             });
+           });
       },
 
     );
@@ -321,6 +492,56 @@ class TaskDetailsState extends State<TaskDetails> {
     );
 
 
+    Future<void> _showAlertConfirmDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('YES'),
+                onPressed: () {
+                  //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteTask(_task.id).then((value) {
+
+                    if(value==1){
+
+                      var msg = '' + _task.name + ' has been deleted successfully!';
+                      _showDeleteAlertDialog('Info', msg);
+
+                    } else {
+                      var msg = 'Could not delete ' + _task.name + ', please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+                  // });
+                },
+              ),
+
+              FlatButton(
+                child: Text('NO'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
 
 
     return Scaffold(
@@ -342,9 +563,8 @@ class TaskDetailsState extends State<TaskDetails> {
             icon: Icon(Icons.mode_edit),
             onPressed: () {
               if(completed){
-
-
-
+                var msg = 'Cannot edit this task because is marked as completed.';
+                _showAlertDialog('Alert', msg);
               } else {
                 Navigator.push(
                   context,
@@ -356,6 +576,11 @@ class TaskDetailsState extends State<TaskDetails> {
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+
+
+              var msg = 'Are you sure you want to delete ' + _task.name + '?';
+              _showAlertConfirmDialog('Confirm', msg);
+
 
 
             },
@@ -389,7 +614,10 @@ class TaskDetailsState extends State<TaskDetails> {
                     child: Column(
                       children: <Widget>[
                         makeTaskDetailHeader,
-                        makeTaskStatus,
+                        Visibility(
+                          visible: _showStatus,
+                          child: makeTaskStatus,
+                        ),
                         Visibility(
                           visible: _subtasksList.length == 0 ? false : true,
                           child: Column(
@@ -558,6 +786,8 @@ class TaskDetailsState extends State<TaskDetails> {
                   ),
                   onTap: () {
 
+                    _currentProgressPercentage = 0;
+                    _currentProgress = 0.0;
                     _loading = true;
                    _showPage = false;
                     Navigator.push(

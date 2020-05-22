@@ -7,6 +7,7 @@ import 'package:ou_mp_app/screens/tasks/task_add.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:intl/intl.dart';
@@ -33,6 +34,12 @@ class ProjectDetailsState extends State<ProjectDetails> {
   bool _loading = true;
   bool _showPage = false;
   List<Task> _tasksList = List<Task>();
+  int nInProgress = 0;
+  int nCompleted = 0;
+  int nOverdue = 0;
+  double _currentProgress = 0.0;
+  int  _currentProgressPercentage = 0;
+
 
   ProjectDetailsState({Key key, this.projectId});
 
@@ -40,7 +47,22 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
   @override
   void initState() {
+    loadData();
+    super.initState();
+  }
 
+
+  @override
+  void dispose() {
+
+
+    _project = null;
+    _student = null;
+
+    super.dispose();
+  }
+
+  loadData () async{
     ServicesAPI.getProjectById(projectId).then((value) {
       setState(() {
 
@@ -50,6 +72,47 @@ class ProjectDetailsState extends State<ProjectDetails> {
           setState(() {
 
             _tasksList.addAll(value);
+
+            if(_tasksList.length>0){
+              nInProgress = 0;
+              nCompleted = 0;
+              nOverdue = 0;
+              _tasksList.removeRange(0, _tasksList.length);
+            }
+            _tasksList.addAll(value);
+            
+            
+
+            for(var i=0; i < _tasksList.length; i++){
+
+              switch(_tasksList[i].status) {
+                case 0 : {
+                  nInProgress = nInProgress + 1;
+                }
+                break;
+
+                case 1: {
+                  nCompleted = nCompleted + 1;
+                }
+                break;
+
+                case 2: {
+                  nOverdue = nOverdue + 1;
+                }
+                break;
+
+                default: {
+                  //
+                }
+                break;
+              }
+
+            }
+
+            _currentProgress = nCompleted / _tasksList.length;
+            var percentage = (_currentProgress * 100).round();
+            _currentProgressPercentage = percentage;
+
           });
 
         });
@@ -67,29 +130,14 @@ class ProjectDetailsState extends State<ProjectDetails> {
       });
     });
 
-
-
-    super.initState();
   }
 
-
-  @override
-  void dispose() {
-
-
-    _project = null;
-    _student = null;
-
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
 
 
-  final double _currentProgress = 0.25;
-  final  _calProgress = _currentProgress * 100;
-  final _progress = _calProgress.toInt();
+
 
 
   String dateFormatted (DateTime dt) {
@@ -113,7 +161,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
               radius: 75.0,
               lineWidth: 5.0,
               percent: _currentProgress,
-              center: new Text( _progress.toString()+"%", style: TextStyle(
+              center: new Text( _currentProgressPercentage.toString()+"%", style: TextStyle(
                 color: Colors.white,
               ),),
               progressColor: Colors.green,
@@ -185,18 +233,19 @@ class ProjectDetailsState extends State<ProjectDetails> {
           Padding(
             padding: const EdgeInsets.only(left: 5),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
-                SizedBox(width: 10.0,),
-                Text('In progress'),
-                SizedBox(width: 10.0,),
+                SizedBox(width: 5.0,),
+                Text('In progress' + ' (' + nInProgress.toString() + ')'),
+                SizedBox(width: 5.0,),
                 Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
-                SizedBox(width: 10.0,),
-                Text('Completed'),
-                SizedBox(width: 10.0,),
+                SizedBox(width: 5.0,),
+                Text('Completed' + ' (' + nCompleted.toString() + ')'),
+                SizedBox(width: 5.0,),
                 Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
-                SizedBox(width: 10.0,),
-                Text('Overdue'),
+                SizedBox(width: 5.0,),
+                Text('Overdue'+ ' (' + nOverdue.toString() + ')'),
               ],
             ),
           ),
@@ -468,6 +517,65 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
     final double hTasks = _tasksList.length.toDouble() * 80;
 
+
+    int _percentage(int taskId, int status) {
+      int _currentPercentage = 0;
+
+      ServicesAPI.getSubtasksByTaskId(taskId).then((value) {
+
+        setState(() {
+
+          if (value.length!=0){
+            int total = 0;
+            total = value.length.toInt();
+             num _cProgress = nCompleted / total;
+            num percentage = (_cProgress * 100).round();
+            _currentPercentage = percentage;
+          } else {
+
+            if (status==1){
+
+
+              num percentage = (1 * 100).round();
+              _currentPercentage = percentage;
+            }
+
+          }
+
+
+
+        });
+
+      });
+
+      return _currentPercentage;
+
+    }
+
+    Color _setColorStatus(int status) {
+      Color c;
+      switch (status) {
+        case 0 :{
+          c = DefaultThemeColor;
+        }
+        break;
+        case 1 : {
+          c = Colors.green;
+        }
+        break;
+        case 2 : {
+          c = Colors.red;
+        }
+        break;
+        default:
+          {
+            c = DefaultThemeColor;
+          }
+      }
+
+      return c;
+    }
+
     String initialDate(DateTime dt){
 
       var formattedDate =  DateFormat.MMMd('en_US').format(dt);
@@ -492,7 +600,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color:  Color(0xff326fb4),
+                    color:  _setColorStatus(_tasksList[index].status),
                     width: 5.0,
                   ),
 
@@ -510,7 +618,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
                       ),
 
 
-                      Text('0%',
+                      Text( _percentage(_tasksList[index].id, _tasksList[index].status).toString() +'%',
                         style: TextStyle(fontSize: 14.0),
                       ),
 
@@ -518,10 +626,26 @@ class ProjectDetailsState extends State<ProjectDetails> {
                   ),
                   onTap: () {
 
+                    _loading = true;
+                    _showPage = false;
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>
-                          TaskDetails(id:_tasksList[index].id)),);
+                          TaskDetails(id:_tasksList[index].id)),).then((value) {
+
+
+                      bool refresh = StorageUtil.getBool('RefreshProjectDetails');
+
+                      if(refresh){
+                        StorageUtil.removeKey('RefreshProjectDetails');
+                        setState(() {
+                          loadData();
+                        });
+                      }
+
+
+                    });
+
                   },
                   // leading: Container(width: 10, color: Colors.red,),
 

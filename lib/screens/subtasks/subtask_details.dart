@@ -247,7 +247,106 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
 
     );
 
+    Future<void> _showDeleteAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context)
+                    => TaskDetails(id: _subtask.taskId,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
+    Future<void> _showAlertConfirmDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('YES'),
+                onPressed: () {
+                  //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteSubtask(_subtask.id).then((value) {
+
+                    if(value==1){
+
+                      // Update allocated hours for the main task
+                      ServicesAPI.getSubtasksByTaskId(_subtask.taskId).then((value) {
+                        double countTime = 0.0;
+                        for(var i=0; i < value.length; i++){
+
+                          countTime = countTime + value[i].allocatedHours;
+
+                        }
+
+                        ServicesAPI.updateTaskEstimatedTime(_subtask.taskId, countTime).then((value) {
+                          if (value != 0) {
+                            var msg = '' + _subtask.name + ' has been deleted successfully!';
+                            _showDeleteAlertDialog('Info', msg);
+                          }
+                        });
+
+                      });
+
+
+
+
+                    } else {
+                      var msg = 'Could not delete ' + _subtask.name + ', please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+                  // });
+                },
+              ),
+
+              FlatButton(
+                child: Text('NO'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
 
 
 
@@ -290,6 +389,9 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+
+              var msg = 'Are you sure you want to delete ' + _subtask.name + '?';
+              _showAlertConfirmDialog('Confirm', msg);
 
             },
           ),

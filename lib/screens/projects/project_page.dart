@@ -40,7 +40,34 @@ class ProjectPageState extends State<ProjectPage> {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
+                  Navigator.pop(context);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -52,9 +79,40 @@ class ProjectPageState extends State<ProjectPage> {
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProjectPageAdd(studentId: student.id,)),);
+
+                ServicesAPI.getProjectByStudentId(student.id).then((value) {
+
+                  if (value.length== 0){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProjectPageAdd(studentId: student.id,)),);
+
+                  } else {
+
+                    int addNew = 1;
+                    for (var i = 0; i < value.length; i++){
+
+                      if (value[i].status==0||value[i].status==2){
+                        addNew =0;
+                      }
+
+                    }
+
+                    if(addNew==1){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProjectPageAdd(studentId: student.id,)),);
+                    } else {
+                      var msg = 'Cannot add a new project whilst there is another '
+                          'project currently in progress.';
+                      _showAlertDialog('Alert', msg);
+                    }
+
+                  }
+
+                });
+
+
               },
             ),
 

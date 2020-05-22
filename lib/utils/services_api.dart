@@ -244,6 +244,10 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/update_task.php';
   static const String taskAllocatedHoursUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_task_estimate_time.php';
+  static const String taskUpdateStatusByIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_task_status.php';
+  static const String taskDeleteUrl =
+      'http://www.jteki.com/api/ou_pm/task_delete.php';
 
 
   static Future<int> addTask(int projectId, String name,
@@ -311,6 +315,62 @@ class ServicesAPI {
     }
 
   }
+  static Future<int> deleteTask(int id) async {
+
+    try {
+      final response = await http.post(taskDeleteUrl,body: {
+        'id' : id.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var taskJson = json.decode(response.body);
+        print(taskJson);
+        int result = 0;
+
+        if(taskJson['StatusCode']==200){
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> updateTaskStatus(int id, int status) async {
+
+    try {
+      final response = await http.post(taskUpdateStatusByIdUrl,body: {
+        'id' : id.toString(),
+        'status' : status.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var taskJson = json.decode(response.body);
+        print(taskJson);
+
+        int result = 0;
+        if(taskJson['StatusCode']==200){
+          result = 1;
+        }
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
 
   static Future<int> updateTaskEstimatedTime(int id, double allocatedHours) async {
 
@@ -389,6 +449,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/update_subtask.php';
   static const String subtaskUpdateStatusByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_subtask_status.php';
+  static const String subtaskDeleteUrl =
+      'http://www.jteki.com/api/ou_pm/subtask_delete.php';
 
   static Future<int> addSubtask(int taskId, String name,
       DateTime startDate, DateTime endDate,
@@ -445,6 +507,34 @@ class ServicesAPI {
         if(subtaskJson['StatusCode']==200){
           result = 1;
         }
+        return result;
+      } else {
+        return 0;
+      }
+
+    } catch (e){
+      return 0;
+    }
+
+  }
+
+  static Future<int> deleteSubtask(int id) async {
+
+    try {
+      final response = await http.post(subtaskDeleteUrl,body: {
+        'id' : id.toString(),
+      });
+
+      if (response.statusCode == 200){
+
+        var subtaskJson = json.decode(response.body);
+        print(subtaskJson);
+        int result = 0;
+
+        if(subtaskJson['StatusCode']==200){
+          result = 1;
+        }
+
         return result;
       } else {
         return 0;
