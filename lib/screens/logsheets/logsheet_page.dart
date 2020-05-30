@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/logsheet.dart';
+import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_add.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_details.dart';
-import 'package:ou_mp_app/screens/subtasks/subtask_add.dart';
-import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
-import 'package:ou_mp_app/screens/tasks/task_edit.dart';
 import 'package:ou_mp_app/style.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:intl/intl.dart';
 
-import '../../main_screen.dart';
 
 
 class LogSheetPage extends StatefulWidget{
-  final int projectId;
+  final Project project;
 
-  LogSheetPage({Key key, this.projectId}) : super(key : key);
+  LogSheetPage({Key key, this.project}) : super(key : key);
 
-  LogSheetPageState  createState() => LogSheetPageState(projectId: projectId);
+  LogSheetPageState  createState() => LogSheetPageState(project: project);
 }
 
 class LogSheetPageState extends State<LogSheetPage> {
-  final int projectId;
+  final Project project;
+  List<LogSheet> _logSheetList = new List<LogSheet>();
 
-  LogSheetPageState({Key key, this.projectId});
-
-  bool completed = false;
+  LogSheetPageState({Key key, this.project});
 
   @override
   void initState() {
+
+    loadData();
     super.initState();
 
   }
@@ -38,11 +38,19 @@ class LogSheetPageState extends State<LogSheetPage> {
   }
 
 
+  void loadData() async {
+
+    _logSheetList = await ServicesAPI.getLogSheetsByProjectId(project.id);
+
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    final _projectTitle = 'TM470 Project';
-    final _dateFromTo = 'Feb 08 - Sept 14';
+
+
 
 
     final makeLogSheetList = Container(
@@ -79,7 +87,7 @@ class LogSheetPageState extends State<LogSheetPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Log Sheets'),
-            Text(_projectTitle, style: TextStyle(
+            Text(project.name, style: TextStyle(
               fontSize: 14.0,
             ),),
           ],
@@ -108,6 +116,7 @@ class LogSheetPageState extends State<LogSheetPage> {
                 children: <Widget>[
 
                   _logSheetsListView(context) ,
+
                   SizedBox(height: 50.0,),
 
 
@@ -124,121 +133,118 @@ class LogSheetPageState extends State<LogSheetPage> {
     );
   }
 
-}
+  Widget _logSheetsListView(BuildContext context) {
 
 
-Widget _logSheetsListView(BuildContext context) {
+
+    //final logSheetId = [1, 2, 3];
+    //final dateCreated = ['Feb 09', 'Feb 10', 'Feb 12'];
+    // final title = ['Sunday, 16:43', 'Monday, 18:34', 'Wednesday, 15:22'];
+    //final work = ['Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.', 'Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.','Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.'];
 
 
-  Color _setColorStatus(int status) {
-    Color c;
-    switch (status) {
-      case 0 :{
-        c = DefaultThemeColor;
-      }
-      break;
-      case 1 : {
-        c = Colors.green;
-      }
-      break;
-      case 2 : {
-        c = Colors.red;
-      }
-      break;
-      default:
-        {
-          c = DefaultThemeColor;
-        }
-    }
-
-    return c;
-  }
-  final logSheetId = [1, 2, 3];
-  final dateCreated = ['Feb 09', 'Feb 10', 'Feb 12'];
-  final title = ['Sunday, 16:43', 'Monday, 18:34', 'Wednesday, 15:22'];
-  final work = ['Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.', 'Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.','Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.'];
-
-
- //final double hLogSheets = logSheetId.length.toDouble() * 200;
-  // full screen width and height
-  double width = MediaQuery.of(context).size.width;
-  double height = MediaQuery.of(context).size.height;
+    //final double hLogSheets = logSheetId.length.toDouble() * 200;
+    // full screen width and height
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
 
 // height without SafeArea
-  var padding = MediaQuery.of(context).padding;
-  double height1 = height - padding.top - padding.bottom;
+    var padding = MediaQuery.of(context).padding;
+    double height1 = height - padding.top - padding.bottom;
 
 // height without status bar
-  double height2 = height - padding.top;
+    double height2 = height - padding.top;
 
 // height without status and toolbar
-  double height3 = height - padding.top - kToolbarHeight - 15;
+    double height3 = height - padding.top - kToolbarHeight - 15;
 
-  return Container(
+    String formattedDate(DateTime dt){
 
-    height: height3 ,
-    
-    //height: hLogSheets,
-    child: ListView.builder(
+      var formattedDate =  DateFormat.MMMd('en_US').format(dt);
 
-      itemCount: logSheetId.length,
-      itemBuilder: (context, index) {
+      return formattedDate;
 
-        return Card(
+    }
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                color: Colors.grey[200],
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(dateCreated[index]),
-                ),
-              ),
-              Container(
-                child: ListTileTheme(
-                  child: ListTile(
-                    // isThreeLine: true,
-                    subtitle: Text(work[index]),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                       MaterialPageRoute(builder: (context) => LogSheetDetails(id:logSheetId[index])),);
-                    },
-                    // leading: Container(width: 10, color: Colors.red,),
 
-                    title:      Text(title[index],
-                      style: TextStyle(fontSize: 14.0),
-                    ),
-                    //     trailing: Icon(Icons.keyboard_arrow_right),
+    String dayTime(DateTime d, DateTime t){
+
+      var formattedDate =  DateFormat.MMMd('en_US').format(d);
+
+      return formattedDate;
+
+    }
+
+    return Container(
+
+      height: height3 ,
+
+      //height: hLogSheets,
+      child: ListView.builder(
+
+        itemCount: _logSheetList.length,
+        itemBuilder: (context, index) {
+
+          return Card(
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Container(
+                  color: Colors.grey[200],
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(formattedDate(_logSheetList[index].loggedDate)),
                   ),
                 ),
-              ),
-            ],
-          ),
+                Container(
+                  child: ListTileTheme(
+                    child: ListTile(
+                      // isThreeLine: true,
+                      subtitle: Text(_logSheetList[index].work),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context)
+                            => LogSheetDetails(id:_logSheetList[index].id)),);
+                      },
+                      // leading: Container(width: 10, color: Colors.red,),
 
-        );
+                      title:      Text(dayTime((_logSheetList[index].loggedDate),
+                          _logSheetList[index].loggedTime),
+                        style: TextStyle(fontSize: 14.0),
+                      ),
+                      //     trailing: Icon(Icons.keyboard_arrow_right),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+          );
+        },
+      ),
+    );
+
+
+
+  }
+
+  Widget _floatingButton(context) {
+
+    return FloatingActionButton(
+      onPressed: () {
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context)
+            => LogSheetPageAdd(project: project,)),);
+
       },
-    ),
-  );
+      child: Icon(Icons.add),
+      backgroundColor: Color(0xff326fb4),
+    );
 
-
-
+  }
 }
 
-Widget _floatingButton(context) {
-
-  return FloatingActionButton(
-    onPressed: () {
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => LogSheetPageAdd()),);
-
-    },
-    child: Icon(Icons.add),
-    backgroundColor: Color(0xff326fb4),
-  );
-
-}

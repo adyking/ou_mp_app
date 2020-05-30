@@ -75,11 +75,12 @@ class LoginPageState extends State<LoginPage> {
       StorageUtil.putBool('KeepMeLoggedIn', isKeepMeLoggedIn);
       StorageUtil.putString('UserEmail', _student.email);
       StorageUtil.putString('UserPassword', _student.password);
+      StorageUtil.putInt('UserId', _student.id);
     } else {
       StorageUtil.removeKey('KeepMeLoggedIn');
       StorageUtil.removeKey('UserEmail');
       StorageUtil.removeKey('UserPassword');
-
+      StorageUtil.removeKey('UserId');
     }
 
     Navigator.push(

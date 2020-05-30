@@ -317,7 +317,7 @@ class ProjectPageAddState extends State<ProjectPageAdd> {
           sEndDate).then((value) {
 
         if(value !=0) {
-          _showAlertDialog('Info', 'A new project has been created successfuly!');
+          _showAlertDialog('Info', 'A new project has been created successfully!');
         }
 
 

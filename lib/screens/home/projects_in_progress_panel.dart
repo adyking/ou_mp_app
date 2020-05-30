@@ -1,15 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/project.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:ou_mp_app/style.dart';
 
 
 class ProjectsProgress extends StatelessWidget {
 
+  final Project project;
+  final double currentProgress;
+  final int currentProgressPercentage;
+
+  ProjectsProgress({Key key, this.project,
+    this.currentProgress,this.currentProgressPercentage}) : super(key:key);
 
   @override
   Widget build(BuildContext context) {
 
     final _pad = 10.0;
+
+
+    Color _setColorStatus(int status) {
+      Color c;
+      switch (status) {
+        case 0 :{
+          c = DefaultThemeColor;
+        }
+        break;
+        case 1 : {
+          c = Colors.green;
+        }
+        break;
+        case 2 : {
+          c = Colors.red;
+        }
+        break;
+        default:
+          {
+            c = DefaultThemeColor;
+          }
+      }
+
+      return c;
+    }
 
     final makeProgress = Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -17,7 +49,7 @@ class ProjectsProgress extends StatelessWidget {
       children: <Widget>[
         Text('CURRENT PROGRESS'),
         SizedBox(height: 10),
-        Text("TM470 Project", style: TextStyle(
+        Text(project.name, style: TextStyle(
             fontSize: 14.0
         ),),
         SizedBox(height: 10),
@@ -26,13 +58,13 @@ class ProjectsProgress extends StatelessWidget {
           animation: true,
           lineHeight: 14.0,
           animationDuration: 2500,
-          percent: 0.25,
+          percent: currentProgress,
          // trailing: Icon(Icons.flag),
-          center: Text("25%", style: TextStyle(
+          center: Text(currentProgressPercentage.toString() + '%', style: TextStyle(
             fontSize: 12.0
           ),),
           linearStrokeCap: LinearStrokeCap.roundAll,
-          progressColor: Color(0xff326fb4),
+          progressColor: _setColorStatus(project.status),
           backgroundColor: Colors.grey[300],
         ),
 

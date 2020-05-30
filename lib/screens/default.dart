@@ -24,8 +24,9 @@ class DefaultPageState extends State<DefaultPage> {
 
     if (StorageUtil.checkBool('KeepMeLoggedIn')) {
       bool isSet = StorageUtil.getBool('KeepMeLoggedIn');
+      int userId = StorageUtil.getInt('UserId');
       if (isSet) {
-        _navTo = new MainScreen(tabIndex: 0,);
+        _navTo = new MainScreen(tabIndex: 0,studentId: userId,);
       } else {
         _navTo = new LoginPage();
       }

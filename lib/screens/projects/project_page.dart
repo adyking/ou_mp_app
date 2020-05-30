@@ -170,6 +170,30 @@ class ProjectPageState extends State<ProjectPage> {
 
     }
 
+    Color _setColorStatus(int status) {
+      Color c;
+      switch (status) {
+        case 0 :{
+          c = DefaultThemeColor;
+        }
+        break;
+        case 1 : {
+          c = Colors.green;
+        }
+        break;
+        case 2 : {
+          c = Colors.red;
+        }
+        break;
+        default:
+          {
+            c = DefaultThemeColor;
+          }
+      }
+
+      return c;
+    }
+
     final double listH = _projectsList.length.toDouble() * 80;
 
     return Container(
@@ -179,10 +203,18 @@ class ProjectPageState extends State<ProjectPage> {
         itemCount: _projectsList.length,
         itemBuilder: (context, index) {
 
-          return Card( //                           <-- Card widget
+          return Card( //
+            color: Colors.white,//                      <-- Card widget
             child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color:  _setColorStatus(_projectsList[index].status),
+                    width: 5.0,
+                  ),
 
-              color: Colors.white,
+                ),
+              ),
               child: ListTileTheme(
 
                 child: ListTile(

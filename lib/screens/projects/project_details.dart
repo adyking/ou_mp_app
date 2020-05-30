@@ -1,7 +1,13 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/TaskSubtask.dart';
 import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/student.dart';
+import 'package:ou_mp_app/models/subtask.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_add.dart';
+import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:ou_mp_app/screens/projects/project_edit.dart';
 import 'package:ou_mp_app/screens/tasks/task_add.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
@@ -14,6 +20,7 @@ import 'package:intl/intl.dart';
 import '../../main_screen.dart';
 import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/main_screen.dart';
+import 'package:http/http.dart' as http;
 
 class ProjectDetails extends StatefulWidget{
 
@@ -33,12 +40,13 @@ class ProjectDetailsState extends State<ProjectDetails> {
   Student _student;
   bool _loading = true;
   bool _showPage = false;
-  List<Task> _tasksList = List<Task>();
+  List<TaskSubtask> _tasksSubtasksList = List<TaskSubtask>();
   int nInProgress = 0;
   int nCompleted = 0;
   int nOverdue = 0;
   double _currentProgress = 0.0;
   int  _currentProgressPercentage = 0;
+
 
 
   ProjectDetailsState({Key key, this.projectId});
@@ -47,7 +55,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
   @override
   void initState() {
-    loadData();
+    loadData2();
     super.initState();
   }
 
@@ -55,14 +63,99 @@ class ProjectDetailsState extends State<ProjectDetails> {
   @override
   void dispose() {
 
-
-    _project = null;
-    _student = null;
-
     super.dispose();
   }
 
-  loadData () async{
+
+  loadData2 () async {
+
+    _project = await ServicesAPI.getProjectById(projectId);
+
+   // _tasksList = await ServicesAPI.getTasksByProjectId(projectId);
+
+
+
+    _tasksSubtasksList =
+          await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(projectId);
+
+      nInProgress = 0;
+      nCompleted = 0;
+      nOverdue = 0;
+      int countCompleted = 0;
+      for(var i=0; i < _tasksSubtasksList.length; i++){
+
+        switch(_tasksSubtasksList[i].taskStatus) {
+          case 0 : {
+            nInProgress = nInProgress + 1;
+          }
+          break;
+
+          case 1: {
+            nCompleted = nCompleted + 1;
+            countCompleted = countCompleted + 1;
+          }
+          break;
+
+          case 2: {
+            nOverdue = nOverdue + 1;
+          }
+          break;
+
+          default: {
+            //
+          }
+          break;
+        }
+
+      }
+
+    if(_tasksSubtasksList.length==countCompleted){
+      // update main project status
+
+      if(_tasksSubtasksList.length!=0) {
+        ServicesAPI.updateProjectStatus(projectId, 1).then((value) {
+
+        });
+      }
+
+    } else {
+
+      DateTime today = DateTime.now();
+      int status = 0;
+      int diffDays = today.difference(_project.endDate).inDays;
+
+      if (diffDays > 0) {
+        status = 2;
+
+
+      }
+
+      ServicesAPI.updateProjectStatus(projectId, status).then((value) {
+
+      });
+
+    }
+
+
+    _currentProgress = nCompleted / _tasksSubtasksList.length;
+    var percentage = (_currentProgress * 100).round();
+    _currentProgressPercentage = percentage;
+
+    _student = await ServicesAPI.getStudentById(_project.studentId);
+
+    setState(() {
+
+      _loading = false;
+      _showPage = true;
+    });
+
+
+
+  }
+
+
+/*
+  loadData () {
     ServicesAPI.getProjectById(projectId).then((value) {
       setState(() {
 
@@ -131,14 +224,11 @@ class ProjectDetailsState extends State<ProjectDetails> {
     });
 
   }
+*/
 
 
   @override
   Widget build(BuildContext context) {
-
-
-
-
 
   String dateFormatted (DateTime dt) {
 
@@ -225,8 +315,8 @@ class ProjectDetailsState extends State<ProjectDetails> {
               Icon(Icons.format_list_numbered, color: Colors.grey
               ),
               SizedBox(width: 10.0,),
-              Text(_tasksList == null ? '' :
-              _tasksList.length.toString() + ' Task(s)' ,),
+              Text(_tasksSubtasksList == null ? '' :
+              _tasksSubtasksList.length.toString() + ' Task(s)' ,),
             ],
           ),
           SizedBox(height: 10.0,),
@@ -476,7 +566,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
                         makeProjectDetailBody,
 
                         Visibility(
-                          visible: _tasksList.length == 0 ? false : true,
+                          visible: _tasksSubtasksList.length == 0 ? false : true,
                           child: Column(
                             children: <Widget>[
                               makeTasksTitle,
@@ -510,47 +600,9 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
   Widget _myListView(BuildContext context) {
 
-   // final tasks = ['Read module material', 'Write up on topic'];
-  //  final tasksStartDate = ['Feb 09', 'Feb 12'];
-   // final tasksId = [1, 2];
 
+    final double hTasks = _tasksSubtasksList.length.toDouble() * 80;
 
-    final double hTasks = _tasksList.length.toDouble() * 80;
-
-
-    int _percentage(int taskId, int status) {
-      int _currentPercentage = 0;
-
-      ServicesAPI.getSubtasksByTaskId(taskId).then((value) {
-
-        setState(() {
-
-          if (value.length!=0){
-            int total = 0;
-            total = value.length.toInt();
-             num _cProgress = nCompleted / total;
-            num percentage = (_cProgress * 100).round();
-            _currentPercentage = percentage;
-          } else {
-
-            if (status==1){
-
-
-              num percentage = (1 * 100).round();
-              _currentPercentage = percentage;
-            }
-
-          }
-
-
-
-        });
-
-      });
-
-      return _currentPercentage;
-
-    }
 
     Color _setColorStatus(int status) {
       Color c;
@@ -589,8 +641,8 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
       height: hTasks,
       child: ListView.builder(
-
-        itemCount: _tasksList.length,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _tasksSubtasksList.length,
         itemBuilder: (context, index) {
 
           return Card(
@@ -600,7 +652,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color:  _setColorStatus(_tasksList[index].status),
+                    color:  _setColorStatus(_tasksSubtasksList[index].taskStatus),
                     width: 5.0,
                   ),
 
@@ -617,10 +669,56 @@ class ProjectDetailsState extends State<ProjectDetails> {
                         style: TextStyle(fontSize: 14.0),
                       ),
 
-
-                      Text( _percentage(_tasksList[index].id, _tasksList[index].status).toString() +'%',
+                      Text(
+                        _tasksSubtasksList[index].percentageCompleted.toString() + '%',
                         style: TextStyle(fontSize: 14.0),
                       ),
+
+                     /* FutureBuilder<String>(
+                        future: ServicesAPI.getSubtasksByTaskIdPercentage(
+                            _tasksList[index].id, _tasksList[index].status), // async work
+                        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.waiting: return new Text('0%');
+                            default:
+                              if (snapshot.hasError)
+                                return new Text('${snapshot.error}');
+                              else
+                                return new Text('${snapshot.data}');
+                          }
+                        },
+                      ),
+*/
+                     /* FutureBuilder<String>(
+
+                        future: ServicesAPI.getSubtasksByTaskIdPercentage(
+                          _tasksList[index].id, _tasksList[index].status),
+                        initialData: '0%',
+                       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                         List<Widget> children;
+                         if (snapshot.hasData) {
+                           children = <Widget>[
+                             Text('${snapshot.data}')
+                           ];
+                         } else if (snapshot.hasError) {
+                           children = <Widget>[
+                             Text('Error: ${snapshot.error}')
+
+                           ];
+                         } else {
+                           children = <Widget>[
+                             Text('0%')
+                           ];
+                         }
+                         return  Column(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             crossAxisAlignment: CrossAxisAlignment.center,
+                             children: children,
+
+                         );
+                       },
+
+                      ),*/
 
                     ],
                   ),
@@ -631,7 +729,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) =>
-                          TaskDetails(id:_tasksList[index].id)),).then((value) {
+                          TaskDetails(id:_tasksSubtasksList[index].taskId)),).then((value) {
 
 
                       bool refresh = StorageUtil.getBool('RefreshProjectDetails');
@@ -639,7 +737,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
                       if(refresh){
                         StorageUtil.removeKey('RefreshProjectDetails');
                         setState(() {
-                          loadData();
+                          loadData2();
                         });
                       }
 
@@ -652,10 +750,10 @@ class ProjectDetailsState extends State<ProjectDetails> {
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(_tasksList[index].name
+                      Text(_tasksSubtasksList[index].taskName
                       ),
 
-                      Text(initialDate(_tasksList[index].startDate),
+                      Text(initialDate(_tasksSubtasksList[index].taskStartDate),
                       ),
 
                     ],
@@ -698,7 +796,8 @@ class ProjectDetailsState extends State<ProjectDetails> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 1,)),);
+                MaterialPageRoute(builder: (context)
+                => MainScreen(tabIndex: 1,studentId: _student.id,)),);
             }
 
         ),
@@ -710,11 +809,12 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
             labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
             child: Icon(Icons.event_note),
-            label: 'Create a log sheet',
+            label: 'Log Sheets',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => LogSheetPageAdd()),);
+                MaterialPageRoute(builder: (context)
+                    => LogSheetPage(project: _project,)),);
             }
 
         ),

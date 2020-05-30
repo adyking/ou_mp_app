@@ -133,9 +133,12 @@ class TaskDetailsState extends State<TaskDetails> {
 
             if(_subtasksList.length==countCompleted){
               // update main task status
-              ServicesAPI.updateTaskStatus(id, 1).then((value) {
 
-              });
+              if(_subtasksList.length!=0) {
+                ServicesAPI.updateTaskStatus(id, 1).then((value) {
+
+                });
+              }
 
             } else {
 
@@ -259,41 +262,49 @@ class TaskDetailsState extends State<TaskDetails> {
               ],
             ),
 
-            SizedBox(height: 10.0,),
-            Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Visibility(
+              visible: _subtasksList.length ==0 ? false : true,
+              child: Column(
                 children: <Widget>[
-                  Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 5.0,),
-                  Text('In progress' + ' (' + nInProgress.toString() + ')'),
-                  SizedBox(width: 5.0,),
-                  Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 5.0,),
-                  Text('Completed' + ' (' + nCompleted.toString() + ')'),
-                  SizedBox(width: 5.0,),
-                  Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
-                  SizedBox(width: 5.0,),
-                  Text('Overdue'+ ' (' + nOverdue.toString() + ')'),
+                  SizedBox(height: 10.0,),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Container(color: DefaultThemeColor,width: 10.0,height: 10.0, child: Text(''),),
+                        SizedBox(width: 5.0,),
+                        Text('In progress' + ' (' + nInProgress.toString() + ')'),
+                        SizedBox(width: 5.0,),
+                        Container(color: Colors.green,width: 10.0,height: 10.0, child: Text(''),),
+                        SizedBox(width: 5.0,),
+                        Text('Completed' + ' (' + nCompleted.toString() + ')'),
+                        SizedBox(width: 5.0,),
+                        Container(color: Colors.red,width: 10.0,height: 10.0, child: Text(''),),
+                        SizedBox(width: 5.0,),
+                        Text('Overdue'+ ' (' + nOverdue.toString() + ')'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 15.0,),
+                  LinearPercentIndicator(
+                    // width: MediaQuery.of(context).size.width - 40,
+                    animation: true,
+                    lineHeight: 14.0,
+                    animationDuration: 2500,
+                    percent: _currentProgress,
+                    // trailing: Icon(Icons.flag),
+                    center: Text(_currentProgressPercentage.toString() +'%', style: TextStyle(
+                        fontSize: 12.0
+                    ),),
+                    linearStrokeCap: LinearStrokeCap.roundAll,
+                    progressColor: completed ? Colors.green :  Color(0xff326fb4),
+                    backgroundColor: Colors.grey[300],
+                  ),
                 ],
               ),
             ),
-            SizedBox(height: 15.0,),
-            LinearPercentIndicator(
-              // width: MediaQuery.of(context).size.width - 40,
-              animation: true,
-              lineHeight: 14.0,
-              animationDuration: 2500,
-              percent: _currentProgress,
-              // trailing: Icon(Icons.flag),
-              center: Text(_currentProgressPercentage.toString() +'%', style: TextStyle(
-                  fontSize: 12.0
-              ),),
-              linearStrokeCap: LinearStrokeCap.roundAll,
-              progressColor: completed ? Colors.green :  Color(0xff326fb4),
-              backgroundColor: Colors.grey[300],
-            ),
+
 
 
           ],

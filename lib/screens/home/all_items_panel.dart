@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -7,9 +8,15 @@ import 'package:ou_mp_app/style.dart';
 
 class AllItemsPanel extends StatelessWidget {
 
+  final Project project;
+
+  AllItemsPanel({Key key, this.project}) : super (key:key);
+
 
   @override
   Widget build(BuildContext context) {
+
+
 
     final _pad = 10.0;
 
@@ -48,70 +55,81 @@ class AllItemsPanel extends StatelessWidget {
   }
 
 
+  Widget _myListView(BuildContext context) {
+
+    final titles = ['All Tasks', 'Log Sheets', 'Overdue Tasks'];
+
+    final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),
+      Icon(Icons.event_note,color: Color(0xff326fb4)),
+      Icon(Icons.assignment_late,color: Color(0xff326fb4))];
+
+    return ListView.builder(
+      itemCount: titles.length,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+
+        return Card( //                           <-- Card widget
+          child: Container(
+            color: Colors.white,
+            child: ListTileTheme(
+              selectedColor: Colors.red,
+              child: ListTile(
+                onTap: () {
+                  switch (index) {
+                    case 0:
+                      {
+                        if(project!=null){
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)
+                            => TasksSubtasksList(project: project,view: 0,)),);
+                        }
 
 
-}
+                      }
+                      break;
+                    case 1:
+                      {
 
-Widget _myListView(BuildContext context) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LogSheetPage()),);
+                      }
+                      break;
+                    case 2:
+                      {
+                        if(project!=null){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)
+                            => TasksSubtasksList(project: project,view: 1,)),);
+                        }
 
-  final titles = ['All Tasks', 'Log Sheets', 'Overdue Tasks'];
+                      }
+                      break;
 
-  final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),
-    Icon(Icons.event_note,color: Color(0xff326fb4)),
-    Icon(Icons.assignment_late,color: Color(0xff326fb4))];
+                    default:
+                      {
 
-  return ListView.builder(
-    itemCount: titles.length,
-    physics: const NeverScrollableScrollPhysics(),
-    itemBuilder: (context, index) {
-
-      return Card( //                           <-- Card widget
-        child: Container(
-          color: Colors.white,
-          child: ListTileTheme(
-            selectedColor: Colors.red,
-            child: ListTile(
-            onTap: () {
-              switch (index) {
-                case 0:
-                  {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 0,)),);
+                      }
                   }
-                  break;
-                case 1:
-                  {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LogSheetPage()),);
-                  }
-                  break;
-                case 2:
-                  {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 1,)),);
-                  }
-                  break;
 
-                default:
-                  {
-
-                  }
-              }
-
-            },
-              leading: icons[index],
-              title: Text(titles[index]),
-              trailing: index == 2 ?  Text('6+',style: TextStyle(color: Colors.red,),) :
-              Icon(Icons.keyboard_arrow_right)
-            ,
+                },
+                leading: icons[index],
+                title: Text(titles[index]),
+                trailing: index == 2 ?  Text('6+',style: TextStyle(color: Colors.red,),) :
+                Icon(Icons.keyboard_arrow_right)
+                ,
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
+  }
+
 }
+
+
 

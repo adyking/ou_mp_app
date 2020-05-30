@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ou_mp_app/models/project.dart';
+import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LogSheetPageAdd extends StatefulWidget {
-  LogSheetPageAddState createState() => LogSheetPageAddState();
+
+  final Project project;
+
+  LogSheetPageAdd({Key key, this.project}) : super(key:key);
+
+  LogSheetPageAddState createState()
+    => LogSheetPageAddState(project: project);
 }
 
 class LogSheetPageAddState extends State<LogSheetPageAdd> {
-  String appBarTitle = 'TM470 Project';
+
+  final Project project;
+
+  LogSheetPageAddState({Key key, this.project});
+
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
@@ -107,7 +120,7 @@ class LogSheetPageAddState extends State<LogSheetPageAdd> {
     );
 
 
-    final makeUserhelp = Column(
+    final makeUserHelp = Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -149,11 +162,56 @@ class LogSheetPageAddState extends State<LogSheetPageAdd> {
       ],
     );
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        LogSheetPage(project: project,)),);
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void createLogSheet() async {
 
 
-    void createLogSheet() {
+      DateTime today = DateTime.now();
+      var formatter = DateFormat('yyyy-MM-dd');
+      var formattedToday = formatter.format(today);
 
-      displaySuccessAlert();
+      var formattedTime = today.hour.toString() + ':' + today.minute.toString() +
+          ':' + today.second.toString();
+
+      int lastId =  await ServicesAPI.addLogSheet(project.id, timeSpentController.text,
+          workController.text, problemsController.text, nextWorkPlannedController.text,
+          DateTime.parse(formattedToday),DateTime.parse(formattedTime));
+
+      if(lastId !=0) {
+        _showAlertDialog('Info', 'A new log sheet has been recorded successfully!');
+      }
+
 
     }
 
@@ -175,7 +233,7 @@ class LogSheetPageAddState extends State<LogSheetPageAdd> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          appBarTitle,
+          project.name,
           style: AppBarTheme.of(context).textTheme.title,
         ),
         backgroundColor: AppBarBackgroundColor,
@@ -231,7 +289,7 @@ class LogSheetPageAddState extends State<LogSheetPageAdd> {
                       ),
                     ),
                     Visibility(
-                      child: makeUserhelp,
+                      child: makeUserHelp,
                       visible: userHelpText == null ? false : true,
                     ),
                   ],

@@ -5,6 +5,12 @@ import 'package:ou_mp_app/style.dart';
 
 class TodayPanels extends StatelessWidget {
 
+final int nTasks;
+final double nHours;
+final int nSubtasks;
+
+
+TodayPanels({Key key, this.nTasks, this.nHours, this.nSubtasks}) : super(key:key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +41,9 @@ class TodayPanels extends StatelessWidget {
                 )
                 ),
                 SizedBox(height: 10),
-                Text('Tasks'),
+                Text('Tasks/Subtasks'),
                 SizedBox(height: 10),
-                Text('2', style: TextStyle(
+                Text(nTasks.toString() + '/' + nSubtasks.toString(), style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 26.0
                 )
@@ -77,7 +83,7 @@ class TodayPanels extends StatelessWidget {
             SizedBox(height: 10),
             Text('Allocated Time'),
             SizedBox(height: 10),
-            Text('3 hours', style: TextStyle(
+            Text(nHours.toString().replaceAll('.0', '') + ' hour(s)', style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 26.0
             )

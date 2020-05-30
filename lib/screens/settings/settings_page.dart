@@ -275,9 +275,8 @@ Widget _aboutListView(BuildContext context) {
                   switch (index) {
                     case 0:
                       {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => TasksSubtasksList(id: 0,view: 0,)),);
+
+
                       }
                       break;
                     case 1:

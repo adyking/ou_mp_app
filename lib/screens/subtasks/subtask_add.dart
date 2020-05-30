@@ -345,41 +345,46 @@ class SubTaskPageAddState extends State<SubTaskPageAdd> {
       );
     }
 
-    void createSubtask() {
+    void createSubtask() async {
 
-      ServicesAPI.addSubtask(taskId, subtaskNameController.text, sStartDate,
-          sEndDate, durationController.text, sPriority, sEstimatedTime).then((value) {
+      int lastId = await  ServicesAPI.addSubtask(taskId, subtaskNameController.text, sStartDate,
+          sEndDate, durationController.text, sPriority, sEstimatedTime);
 
-        if(value !=0) {
+      if(lastId !=0) {
 
-          // Update allocated hours for the main task
-          ServicesAPI.getSubtasksByTaskId(taskId).then((value) {
-              double countTime = 0.0;
-              for(var i=0; i < value.length; i++){
+        // Update allocated hours for the main task
+        List<Subtask> _subtasksList = List<Subtask>();
+        _subtasksList = await ServicesAPI.getSubtasksByTaskId(taskId);
 
-                countTime = countTime + value[i].allocatedHours;
+        double countTime = 0.0;
+        for(var i=0; i < _subtasksList.length; i++){
 
-              }
-
-              ServicesAPI.updateTaskEstimatedTime(taskId, countTime).then((value) {
-                if (value != 0) {
-                  _showAlertDialog(
-                      'Info', 'A new subtask has been created successfully '
-                      'for the current task!');
-                }
-              });
-
-          });
-
-
-        } else {
-          _showAlertDialog('Error', 'Could not create a subtask, please try again.');
+          countTime = countTime + _subtasksList[i].allocatedHours;
 
         }
 
+        DateTime today = DateTime.now();
+        int status = 0;
+        int diffDays = today.difference(_task.endDate).inDays;
 
-      });
+        if (diffDays > 0) {
+          status = 2;
+          ServicesAPI.updateSubtaskStatus(lastId, status);
+        }
 
+        int val = await ServicesAPI.updateTaskEstimatedTime(taskId, countTime);
+
+        if (val != 0) {
+          _showAlertDialog(
+              'Info', 'A new subtask has been created successfully '
+              'for the current task!');
+        }
+
+
+      } else {
+        _showAlertDialog('Error', 'Could not create a subtask, please try again.');
+
+      }
     }
     String dateFormatted (DateTime dt) {
 
