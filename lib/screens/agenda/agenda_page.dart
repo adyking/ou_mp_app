@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:ou_mp_app/models/student.dart';
-import 'package:ou_mp_app/screens/subtasks/subtask_add.dart';
-import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
-import 'package:ou_mp_app/screens/tasks/task_add.dart';
-import 'package:ou_mp_app/screens/tasks/task_edit.dart';
-import 'package:ou_mp_app/style.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:ou_mp_app/models/project.dart';
 
-import '../../main_screen.dart';
+import 'package:ou_mp_app/models/student.dart';
+
+import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
+
+import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/models/TaskSubtask.dart';
+
 import 'package:flutter_clean_calendar/flutter_clean_calendar.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 
 
 class AgendaPage extends StatefulWidget{
@@ -24,9 +24,14 @@ class AgendaPage extends StatefulWidget{
 
 class AgendaPageState extends State<AgendaPage> {
   final Student student;
+  Project _project;
   List _selectedTasks;
   DateTime _selectedDay;
-
+  List<TaskSubtask> _tasksSubtasksList = List<TaskSubtask>();
+  List<TaskSubtask> _tasksSubtasksListPercentage = List<TaskSubtask>();
+  Map<DateTime, List> _agendaTasksSubtasks = Map<DateTime, List>() ;
+  bool _loading = true;
+  bool _showPage = false;
 
   AgendaPageState({Key key, this.student});
 
@@ -34,7 +39,8 @@ class AgendaPageState extends State<AgendaPage> {
   void initState() {
 
 
-    _selectedTasks = _tasks[_selectedDay] ?? [];
+    loadData();
+   
     super.initState();
 
   }
@@ -45,15 +51,73 @@ class AgendaPageState extends State<AgendaPage> {
     super.dispose();
   }
 
+  
+  void loadData() async {
+
+    _project = await ServicesAPI.getCurrentProjectByStudentId(student.id);
+
+
+    _tasksSubtasksListPercentage =
+    await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(_project.id);
+    
+    _tasksSubtasksList = await ServicesAPI.getTasksSubtasksByProjectIdAgenda(_project.id);
+
+    var map2 = {};
+    _tasksSubtasksList.forEach((taskSubtask) => _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = [
+      {
+
+        'task_id' : taskSubtask.taskId,
+        'subtask_id' : taskSubtask.subtaskId,
+        'task_name' : taskSubtask.taskName,
+        'subtask_name': taskSubtask.subtaskName,
+        'task_time' : taskSubtask.taskAllocatedHours,
+        'subtask_time' : taskSubtask.subtaskAllocatedHours,
+        'taskStatus' : taskSubtask.taskStatus,
+        'subtaskStatus' : taskSubtask.subtaskStatus,
+        'percent' : '0%',
+        'isDone' : true
+      }
+
+    ]);
+    print(_agendaTasksSubtasks);
+    _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
+    setState(() {
+
+      _loading = false;
+      _showPage = true;
+    });
+
+  }
+
+  String getPercentage(int taskId) {
+
+    int percentage = 0;
+    for(var i =0; i < _tasksSubtasksListPercentage.length; i++){
+
+      if (taskId== _tasksSubtasksListPercentage[i].taskId){
+
+        percentage = _tasksSubtasksListPercentage[i].percentageCompleted;
+
+        break;
+      }
+
+    }
+
+    return percentage.toString() + '%';
+  }
+
   void _handleNewDate(date) {
     setState(() {
       _selectedDay = date;
-      _selectedTasks = _tasks[_selectedDay] ?? [];
+      _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
     });
     print(_selectedTasks);
+
+
+
   }
 
-  final Map<DateTime, List> _tasks = {
+  /*final Map<DateTime, List> _tasks = {
     DateTime(2020, 5, 7): [
       {'subtask_id': 1,'subtask_name': 'Choose topic', 'time': '2 hours', 'task_name': 'Read module material','percent':'15%','isDone': true},
     ],
@@ -78,7 +142,7 @@ class AgendaPageState extends State<AgendaPage> {
     DateTime(2020, 6, 6): [
       {'subtask_id': 1,'subtask_name': 'Choose topic', 'time': '2 hours', 'task_name': 'Read module material','percent':'15%','isDone': true},
     ],
-  };
+  };*/
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +159,7 @@ class AgendaPageState extends State<AgendaPage> {
               onPressed: () {
 
                 setState(() {
-                  print('lol');
+
 
                 });
               },
@@ -109,12 +173,25 @@ class AgendaPageState extends State<AgendaPage> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Container(
+              Visibility(
+                visible:  _loading,
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 10.0,),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10.0,),
+                  ],
+                ) ,
+              ),
+
+              Visibility(
+              visible: _showPage ,
+              child:  Container(
                 color: Colors.white,
                 child: Calendar(
                   startOnMonday: true,
                   weekDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                  events: _tasks,
+                  events: _agendaTasksSubtasks,
                   onRangeSelected: (range) =>
                       print("Range is ${range.from}, ${range.to}"),
                   onDateSelected: (date) => _handleNewDate(date),
@@ -131,102 +208,153 @@ class AgendaPageState extends State<AgendaPage> {
                       fontSize: 11),
                 ),
               ),
-              _buildEventList()
+
+              ),
+
+              _buildEventList(),
+
             ],
           ),
         ),
-      ),
-    );
-  }
 
+      ),
+
+
+    );
+
+
+  }
   Widget _buildEventList() {
 
-    Color _setColorStatus(int status) {
-      Color c;
-      switch (status) {
-        case 0 :{
-          c = DefaultThemeColor;
+
+    if(_showPage==true) {
+
+      Color _setColorStatus(int subtaskId, int taskStatus, int subtaskStatus) {
+        int status;
+        if (subtaskId==0){
+
+          status = taskStatus;
+
+        } else {
+
+          status = subtaskStatus;
         }
-        break;
-        case 1 : {
-          c = Colors.green;
-        }
-        break;
-        case 2 : {
-          c = Colors.red;
-        }
-        break;
-        default:
-          {
+
+
+        Color c;
+        switch (status) {
+          case 0 :{
             c = DefaultThemeColor;
           }
+          break;
+          case 1 : {
+            c = Colors.green;
+          }
+          break;
+          case 2 : {
+            c = Colors.red;
+          }
+          break;
+          default:
+            {
+              c = DefaultThemeColor;
+            }
+        }
+
+        return c;
       }
 
-      return c;
+      String timeAllocated(int subtaskId, String taskTime, String subtaskTime){
+
+        if (subtaskId==0){
+
+          return taskTime.replaceAll('.0', '') + ' hour(s)';
+
+        } else {
+
+          return subtaskTime.replaceAll('.0', '') + ' hour(s)';
+        }
+
+      }
+
+
+
+      return Expanded(
+        child: ListView.builder(
+          itemBuilder: (BuildContext context, int index) => Card(
+
+            color: Colors.white,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color:  _setColorStatus(
+                        _selectedTasks[index]['subtask_id'],
+                        _selectedTasks[index]['taskStatus'],
+                        _selectedTasks[index]['subtaskStatus']),
+                    width: 5.0,
+                  ),
+
+                ),
+              ),
+              child: ListTileTheme(
+
+                child: ListTile(
+                  // isThreeLine: true,
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(_selectedTasks[index]['task_name'].toString(),
+                        style: TextStyle(fontSize: 14.0),
+                      ),
+
+
+                      Text(getPercentage(_selectedTasks[index]['task_id']),
+                        style: TextStyle(fontSize: 14.0),
+                      ),
+
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SubtaskDetails(id:_selectedTasks[index]['subtask_id'])),);
+                  },
+                  // leading: Container(width: 10, color: Colors.red,),
+
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(_selectedTasks[index]['subtask_name'].toString()
+                      ),
+
+                      Text(
+                          timeAllocated(_selectedTasks[index]['subtask_id'],
+                            _selectedTasks[index]['task_time'].toString(),
+                            _selectedTasks[index]['subtask_time'].toString()
+                          )
+
+                      ),
+
+                    ],
+                  ),
+                  //     trailing: Icon(Icons.keyboard_arrow_right),
+                ),
+              ),
+            ),
+
+          ),
+          itemCount:  _selectedTasks.length,
+        ),
+      );
+    } else {
+
+      return Container(height: 1,);
     }
 
 
-    return Expanded(
-      child: ListView.builder(
-        itemBuilder: (BuildContext context, int index) => Card(
-
-          color: Colors.white,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                 color:  _setColorStatus(_selectedTasks[index]['status']),
-                  width: 5.0,
-                ),
-
-              ),
-            ),
-            child: ListTileTheme(
-
-              child: ListTile(
-                // isThreeLine: true,
-                subtitle: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(_selectedTasks[index]['task_name'].toString(),
-                      style: TextStyle(fontSize: 14.0),
-                    ),
-
-
-                    Text(_selectedTasks[index]['percent'].toString(),
-                      style: TextStyle(fontSize: 14.0),
-                    ),
-
-                  ],
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SubtaskDetails(id:_selectedTasks[index]['subtask_id'])),);
-                },
-                // leading: Container(width: 10, color: Colors.red,),
-
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(_selectedTasks[index]['subtask_name'].toString()
-                    ),
-
-                    Text(_selectedTasks[index]['time'].toString(),
-                    ),
-
-                  ],
-                ),
-                //     trailing: Icon(Icons.keyboard_arrow_right),
-              ),
-            ),
-          ),
-
-        ),
-        itemCount: _selectedTasks.length,
-      ),
-    );
   }
+
 
 }
 

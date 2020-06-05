@@ -4,23 +4,25 @@ class LogSheet {
   String timeSpent;
   String work;
   String problems;
+  String comments;
   String nextWorkPlanned;
   DateTime loggedDate;
-  DateTime loggedTime;
+  String loggedTime;
 
 
   LogSheet(this.id, this.projectId ,this.timeSpent, this.work, this.problems,
-      this.nextWorkPlanned, this.loggedDate, this.loggedTime);
+      this.comments,this.nextWorkPlanned, this.loggedDate, this.loggedTime);
 
   LogSheet.fromJson(Map<String, dynamic> json){
     id = int.parse(json['id']);
-    projectId =  int.parse(json['studentId']);
+    projectId =  int.parse(json['projectId']);
     timeSpent = json['timeSpent'];
     work = json['work'];
     problems = json['problems'];
+    comments = json['comments'];
     nextWorkPlanned = json['nextWorkPlanned'];
     loggedDate =  DateTime.parse(json['loggedDate']);
-    loggedTime =  DateTime.parse(json['loggedTime']);
+    loggedTime =  json['loggedTime'];
   }
 
 }

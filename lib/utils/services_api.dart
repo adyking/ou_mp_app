@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:ou_mp_app/models/logsheet.dart';
 import 'package:ou_mp_app/models/student.dart';
@@ -104,6 +105,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getProjectById.php';
   static const String projectDetailsByStudentIdUrl =
       'http://www.jteki.com/api/ou_pm/getProjectsByStudentId.php';
+  static const String overdueProjectDetailsByStudentIdUrl =
+      'http://www.jteki.com/api/ou_pm/getOverdueProjectsByStudentId.php';
   static const String currentProjectDetailsByStudentIdUrl =
       'http://www.jteki.com/api/ou_pm/getCurrentProjectsByStudentId.php';
   static const String projectUpdateStatusByIdUrl =
@@ -231,23 +234,66 @@ class ServicesAPI {
     return projects;
   }
 
-  static Future<Project> getCurrentProjectByStudentId(int studentId) async {
-    final response =
-        await http.post(currentProjectDetailsByStudentIdUrl, body: {
-      'studentId': studentId.toString(),
-    });
 
-    Project project;
+  static Future<List<Project>> getOverdueProjectByStudentId(int studentId,
+      DateTime endDate) async {
 
-    if (response.statusCode == 200) {
-      var projectsJson = json.decode(response.body);
+    http.Client client = new http.Client();
 
-      for (var pJson in projectsJson) {
-        project = Project.fromJson(pJson);
+    try{
+      final response = await client.post(overdueProjectDetailsByStudentIdUrl, body: {
+        'studentId': studentId.toString(),
+        'endDate': endDate.toString(),
+      });
+
+      var projects = List<Project>();
+
+      if (response.statusCode == 200) {
+        var projectsJson = json.decode(response.body);
+
+        for (var pJson in projectsJson) {
+          projects.add(Project.fromJson(pJson));
+        }
       }
+
+      return projects;
+    } catch(e){
+      return null;
+    } finally{
+
+      client.close();
     }
 
-    return project;
+
+  }
+
+  static Future<Project> getCurrentProjectByStudentId(int studentId) async {
+    http.Client client = new http.Client();
+
+    try{
+      final response =
+      await client.post(currentProjectDetailsByStudentIdUrl, body: {
+        'studentId': studentId.toString(),
+      });
+
+      Project project;
+
+      if (response.statusCode == 200) {
+        var projectsJson = json.decode(response.body);
+
+        for (var pJson in projectsJson) {
+          project = Project.fromJson(pJson);
+        }
+      }
+
+      return project;
+    } catch (e){
+      return null;
+    } finally {
+      client.close();
+    }
+
+
   }
 
   static Future<Project> getProjectById(int id) async {
@@ -282,6 +328,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getTaskById.php';
   static const String taskDetailsByProjectIdUrl =
       'http://www.jteki.com/api/ou_pm/getTasksByProjectId.php';
+  static const String overdueTaskDetailsByProjectIdUrl =
+      'http://www.jteki.com/api/ou_pm/getOverdueTasksByProjectId.php';
   static const String taskDetailsUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_task.php';
   static const String taskAllocatedHoursUpdateByIdUrl =
@@ -457,6 +505,34 @@ class ServicesAPI {
     }
   }
 
+  static Future<List<Task>> getOverdueTasksByProjectId(int projectId,
+      DateTime date) async {
+    http.Client client = new http.Client();
+    var tasks = List<Task>();
+
+    try {
+      final response = await http.post(overdueTaskDetailsByProjectIdUrl, body: {
+        'projectId': projectId.toString(),
+        'taskEndDate': date.toString(),
+
+      });
+
+      if (response.statusCode == 200) {
+        var tasksJson = json.decode(response.body);
+
+        for (var tJson in tasksJson) {
+          tasks.add(Task.fromJson(tJson));
+        }
+      }
+
+      return tasks;
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
   static Future<Task> getTaskById(int id) async {
     final response = await http.post(taskDetailsByIdUrl, body: {
       'id': id.toString(),
@@ -486,6 +562,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/update_subtask.php';
   static const String subtaskUpdateStatusByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_subtask_status.php';
+  static const String subtaskUpdateStatusOverdueByTaskIdUrl =
+      'http://www.jteki.com/api/ou_pm/update_subtask_status_overdue.php';
   static const String subtaskDeleteUrl =
       'http://www.jteki.com/api/ou_pm/subtask_delete.php';
 
@@ -605,22 +683,62 @@ class ServicesAPI {
     }
   }
 
-  static Future<List<Subtask>> getSubtasksByTaskId(int taskId) async {
-    final response = await http.post(subtaskDetailsByTaskIdUrl, body: {
-      'taskId': taskId.toString(),
-    });
+  static Future<int> updateSubtaskStatusOverdueByTaskId(int taskId) async {
 
-    var subtasks = List<Subtask>();
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(subtaskUpdateStatusOverdueByTaskIdUrl
+          , body: {
+        'taskId': taskId.toString(),
+      });
 
-    if (response.statusCode == 200) {
-      var subtasksJson = json.decode(response.body);
+      if (response.statusCode == 200) {
+        var subtaskJson = json.decode(response.body);
+        print(subtaskJson);
 
-      for (var sJson in subtasksJson) {
-        subtasks.add(Subtask.fromJson(sJson));
+        int result = 0;
+        if (subtaskJson['StatusCode'] == 200) {
+          result = 1;
+        }
+        return result;
+      } else {
+        return 0;
       }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+    }
+  }
+
+  static Future<List<Subtask>> getSubtasksByTaskId(int taskId) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(subtaskDetailsByTaskIdUrl, body: {
+        'taskId': taskId.toString(),
+      });
+
+      var subtasks = List<Subtask>();
+
+      if (response.statusCode == 200) {
+        var subtasksJson = json.decode(response.body);
+
+        for (var sJson in subtasksJson) {
+          subtasks.add(Subtask.fromJson(sJson));
+        }
+      }
+
+      return subtasks;
+    } catch (e){
+      return null;
+
+    } finally {
+      client.close();
     }
 
-    return subtasks;
+
   }
 
   static Future<String> getSubtasksByTaskIdPercentage(
@@ -705,33 +823,84 @@ class ServicesAPI {
   // Task & subtasks
   static const String tasksSubtasksDetailsByProjectIdUrl =
       'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectId.php';
+  static const String tasksSubtasksDetailsByProjectIdAgendaUrl =
+      'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdAgenda.php';
+  static const String tasksSubtasksDetailsByProjectIdOverdueUrl =
+      'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdOverdue.php';
   static const String tasksSubtasksDetailsByProjectIdWithPercentageUrl =
       'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdPercentage.php';
+  static const String tasksSubtasksDetailsByProjectIListWithPercentageUrl =
+      'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdListPercentage.php';
 
   static Future<List<TaskSubtask>> getTasksSubtasksByProjectId(
       int projectId,
       DateTime subtaskStartDate,
       DateTime taskStartDate,
       int filterOption) async {
-    final response = await http.post(tasksSubtasksDetailsByProjectIdUrl, body: {
-      'projectId': projectId.toString(),
-      'subtaskStartDate': subtaskStartDate.toString(),
-      'taskStartDate': taskStartDate.toString(),
-      'filterOption': filterOption.toString(),
-    });
 
+    http.Client client = new http.Client();
     var tasksSubtasks = List<TaskSubtask>();
 
-    if (response.statusCode == 200) {
-      var tasksSubtasksJson = json.decode(response.body);
+    try{
+      final response = await client.post(tasksSubtasksDetailsByProjectIdUrl, body: {
+        'projectId': projectId.toString(),
+        'subtaskStartDate': subtaskStartDate.toString(),
+        'taskStartDate': taskStartDate.toString(),
+        'filterOption': filterOption.toString(),
+      });
 
-      for (var tSJson in tasksSubtasksJson) {
-        tasksSubtasks.add(TaskSubtask.fromJson(tSJson));
+
+
+      if (response.statusCode == 200) {
+        var tasksSubtasksJson = json.decode(response.body);
+
+        for (var tSJson in tasksSubtasksJson) {
+          tasksSubtasks.add(TaskSubtask.fromJsonHome(tSJson));
+        }
       }
+
+      return tasksSubtasks;
+    }catch(e) {
+      return tasksSubtasks;
+    } finally {
+      client.close();
     }
 
-    return tasksSubtasks;
   }
+
+  static Future<List<TaskSubtask>> getTasksSubtasksByProjectIdOverdue(
+      int projectId,
+      DateTime subtaskEndDate,
+      DateTime taskEndDate) async {
+
+    http.Client client = new http.Client();
+    var tasksSubtasks = List<TaskSubtask>();
+
+    try{
+      final response = await client.post(tasksSubtasksDetailsByProjectIdOverdueUrl, body: {
+        'projectId': projectId.toString(),
+        'subtaskEndDate': subtaskEndDate.toString(),
+        'taskEndDate': taskEndDate.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var tasksSubtasksJson = json.decode(response.body);
+
+        for (var tSJson in tasksSubtasksJson) {
+          tasksSubtasks.add(TaskSubtask.fromJsonOverdue(tSJson));
+        }
+      }
+
+      return tasksSubtasks;
+    }catch(e) {
+      return tasksSubtasks;
+    } finally {
+      client.close();
+    }
+
+  }
+
+
 
   static Future<List<TaskSubtask>> getTasksSubtasksByProjectIdWithPercentage(
       int projectId) async {
@@ -764,18 +933,91 @@ class ServicesAPI {
 
   }
 
+  static Future<List<TaskSubtask>> getTasksSubtasksByProjectIdAgenda(
+      int projectId) async {
+
+    http.Client client = new http.Client();
+    var tasksSubtasks = List<TaskSubtask>();
+
+    try{
+      final response = await client.post(tasksSubtasksDetailsByProjectIdAgendaUrl
+          , body: {
+        'projectId': projectId.toString(),
+      });
+
+
+
+      if (response.statusCode == 200) {
+        var tasksSubtasksJson = json.decode(response.body);
+
+        for (var tSJson in tasksSubtasksJson) {
+          tasksSubtasks.add(TaskSubtask.fromJsonAgenda(tSJson));
+        }
+      }
+
+      return tasksSubtasks;
+    }catch(e) {
+      return tasksSubtasks;
+    } finally {
+      client.close();
+    }
+
+  }
+
+
+  static Future<List<TaskSubtask>> getTasksSubtasksByProjectIdListWithPercentage(
+      int projectId,
+      DateTime subtaskStartDate,
+      DateTime taskStartDate,
+      int filterOption) async {
+
+    http.Client client = new http.Client();
+
+    try {
+      final response = await http
+          .post(tasksSubtasksDetailsByProjectIListWithPercentageUrl, body: {
+        'projectId': projectId.toString(),
+        'subtaskStartDate': subtaskStartDate.toString(),
+        'taskStartDate': taskStartDate.toString(),
+        'filterOption': filterOption.toString(),
+      });
+
+      var tasksSubtasks = List<TaskSubtask>();
+
+      if (response.statusCode == 200) {
+        var tasksSubtasksJson = json.decode(response.body);
+
+        for (var tSJson in tasksSubtasksJson) {
+          tasksSubtasks.add(TaskSubtask.fromJson(tSJson));
+        }
+      }
+
+      return tasksSubtasks;
+
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+    }
+
+  }
+
   // LogSheets
   static const String logSheetAddUrl =
       'http://www.jteki.com/api/ou_pm/log_sheet_add.php';
   static const String logSheetsListByProjectIdUrl =
       'http://www.jteki.com/api/ou_pm/getLogSheetsByProjectId.php';
+  static const String logSheetDetailsByIdUrl =
+      'http://www.jteki.com/api/ou_pm/getLogSheetById.php';
+  static const String logSheetUpdateUrl =
+      'http://www.jteki.com/api/ou_pm/log_sheet_update.php';
 
   static Future<List<LogSheet>> getLogSheetsByProjectId(int projectId) async {
 
     http.Client client = new http.Client();
 
     try{
-      final response = await client.post(projectDetailsByStudentIdUrl, body: {
+      final response = await client.post(logSheetsListByProjectIdUrl, body: {
         'projectId': projectId.toString(),
       });
 
@@ -801,8 +1043,8 @@ class ServicesAPI {
 
 
   static Future<int> addLogSheet(int projectId, String timeSpent, String work,
-      String problems, String nextWorkPlanned, DateTime loggedDate, DateTime
-      loggedTime) async {
+      String problems, String comments ,String nextWorkPlanned, DateTime loggedDate,
+      String loggedTime) async {
 
     http.Client client = new http.Client();
     try {
@@ -811,6 +1053,7 @@ class ServicesAPI {
         'timeSpent': timeSpent,
         'work': work,
         'problems': problems,
+        'comments': comments,
         'nextWorkPlanned': nextWorkPlanned,
         'loggedDate': loggedDate.toString(),
         'loggedTime': loggedTime.toString(),
@@ -821,6 +1064,65 @@ class ServicesAPI {
         print(logSheetJson);
         var lastId = logSheetJson['Response']['insertedId'];
         return lastId;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<LogSheet> getLogSheetById(int id) async {
+    http.Client client = new http.Client();
+    LogSheet logSheet;
+
+    try {
+      final response = await client.post(logSheetDetailsByIdUrl, body: {
+        'id': id.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var logSheetJson = json.decode(response.body);
+
+        for (var lJson in logSheetJson) {
+          logSheet = LogSheet.fromJson(lJson);
+        }
+      }
+
+      return logSheet;
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<int> updateLogSheet(int id, String timeSpent, String work,
+      String problems, String comments, String nextWorkPlanned) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(logSheetUpdateUrl, body: {
+        'id': id.toString(),
+        'timeSpent': timeSpent,
+        'work': work,
+        'problems': problems,
+        'comments': comments,
+        'nextWorkPlanned': nextWorkPlanned,
+      });
+
+      if (response.statusCode == 200) {
+        var logSheetJson = json.decode(response.body);
+        print(logSheetJson);
+        int result = 0;
+
+        if (logSheetJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
       } else {
         return 0;
       }

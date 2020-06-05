@@ -73,6 +73,10 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
    // _tasksList = await ServicesAPI.getTasksByProjectId(projectId);
 
+    DateTime todayDefault = DateTime.now();
+    var taskSubtasksList =
+    await ServicesAPI.getTasksSubtasksByProjectId(_project.id, todayDefault
+        , todayDefault, 2);
 
 
     _tasksSubtasksList =
@@ -137,7 +141,24 @@ class ProjectDetailsState extends State<ProjectDetails> {
     }
 
 
-    _currentProgress = nCompleted / _tasksSubtasksList.length;
+
+    int listCompleted = 0;
+    for(var i=0; i < taskSubtasksList.length; i++){
+      switch(taskSubtasksList[i].taskStatus) {
+
+        case 1: {
+          listCompleted = listCompleted + 1;
+        }
+        break;
+
+        default: {
+          //
+        }
+        break;
+      }
+    }
+
+    _currentProgress = listCompleted / _tasksSubtasksList.length;
     var percentage = (_currentProgress * 100).round();
     _currentProgressPercentage = percentage;
 
@@ -152,6 +173,9 @@ class ProjectDetailsState extends State<ProjectDetails> {
 
 
   }
+
+
+
 
 
 /*

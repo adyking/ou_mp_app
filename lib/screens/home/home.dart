@@ -3,10 +3,12 @@ import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/models/subtask.dart';
 import 'package:ou_mp_app/models/task.dart';
+import 'package:ou_mp_app/models/tasksubtask.dart';
 import 'package:ou_mp_app/screens/home/all_items_panel.dart';
 import 'package:ou_mp_app/screens/home/today_panels.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:ou_mp_app/utils/sys_update.dart';
 import 'projects_in_progress_panel.dart';
 import 'package:intl/intl.dart';
 
@@ -30,6 +32,8 @@ class HomeState extends State<Home> {
   bool showCurrentProgress = false;
   List<Task> _tasksList = List<Task>();
   List<int> taskIds = List<int>();
+  List<int> taskIdsList = List<int>();
+  List<TaskSubtask> _tasksSubtasksList = List<TaskSubtask>();
   List<Subtask> _subtasksList = List<Subtask>();
   int nInProgress = 0;
   int nCompleted = 0;
@@ -50,7 +54,8 @@ class HomeState extends State<Home> {
   @override
   void initState() {
 
-  //  loadData2();
+
+    loadData2();
     super.initState();
   }
 
@@ -62,9 +67,23 @@ class HomeState extends State<Home> {
   }
 
 
+
   void loadData2() async {
 
     _project = await ServicesAPI.getCurrentProjectByStudentId(student.id);
+
+
+    DateTime today = DateTime.now();
+    var formatter = DateFormat('yyyy-MM-dd');
+    var formattedToday = formatter.format(today);
+
+
+
+    //int diffDays = today.difference(_project.endDate).inDays;
+
+    //if (diffDays > 0) {
+        await SysUpdate.updateTasksSubtasksOverdue(_project.id, DateTime.parse(formattedToday));
+  //  }
 
     if(_project==null){
       _loading = false;
@@ -72,15 +91,50 @@ class HomeState extends State<Home> {
 
     } else {
 
-      _tasksList = await ServicesAPI.getTasksByProjectId(_project.id);
+      DateTime todayDefault = DateTime.now();
 
-      for(var i=0; i < _tasksList.length; i++){
+     // _tasksList = await ServicesAPI.getTasksByProjectId(_project.id);
+
+     var taskSubtasksList =
+          await ServicesAPI.getTasksSubtasksByProjectId(_project.id, todayDefault
+              , todayDefault, 2);
 
 
-        _subtasksList = await ServicesAPI.getSubtasksByTaskId(_tasksList[i].id);
 
 
-        for(var s= 0; s < _subtasksList.length; s++){
+      for(var i=0; i < taskSubtasksList.length; i++){
+
+
+
+
+        //_subtasksList = await ServicesAPI.getSubtasksByTaskId(_tasksList[i].id);
+
+        int subtaskId = taskSubtasksList[i].subtaskId;
+        int taskId = taskSubtasksList[i].taskId;
+
+        if(!taskIdsList.contains(taskId)){
+          taskIdsList.add(taskId);
+        }
+
+        if(subtaskId!=0) {
+          DateTime today = DateTime.now();
+
+          var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
+          var formattedStartDate
+            = DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].subtaskStartDate);
+
+          if (formattedTodayDate==formattedStartDate){
+
+            if(!taskIds.contains(taskId)){
+              taskIds.add(taskId);
+            }
+
+            countTodaySubtasks = countTodaySubtasks + 1;
+            countTodaySubtasksHours = countTodaySubtasksHours + taskSubtasksList[i].subtaskAllocatedHours;
+          }
+        }
+
+   /*     for(var s= 0; s < _subtasksList.length; s++){
 
           DateTime today = DateTime.now();
 
@@ -97,23 +151,28 @@ class HomeState extends State<Home> {
             countTodaySubtasksHours = countTodaySubtasksHours + _subtasksList[s].allocatedHours;
           }
 
-        }
+        }*/
 
         DateTime today = DateTime.now();
 
         var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
-        var formattedStartDate = DateFormat('dd-MM-yyyy').format(_tasksList[i].startDate);
+        var formattedStartDate =
+          DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].taskStartDate);
 
         if (formattedTodayDate==formattedStartDate){
 
-          if(!taskIds.contains(_tasksList[i].startDate)){
+          if(!taskIds.contains(taskId)){
             countTodayTasks = countTodayTasks + 1;
+            taskIds.add(taskId);
+            countTodayTasksHours = countTodayTasksHours + taskSubtasksList[i].taskAllocatedHours;
           }
-          countTodayTasksHours = countTodayTasksHours + _tasksList[i].allocatedHours;
+
 
         }
 
-        switch(_tasksList[i].status) {
+
+
+        switch(taskSubtasksList[i].taskStatus) {
           case 0 : {
             nInProgress = nInProgress + 1;
           }
@@ -138,14 +197,16 @@ class HomeState extends State<Home> {
       }
 
 
+      int total = taskIdsList.length;
+
       setState(() {
-        _currentProgress = nCompleted / _tasksList.length;
+        _currentProgress = nCompleted / taskIdsList.length;
         var percentage = (_currentProgress * 100).round();
         _currentProgressPercentage = percentage;
 
 
 
-        countTodayTasks = countTodayTasks + taskIds.length;
+        countTodayTasks = taskIds.length;
         countTodayTasksHours = countTodayTasksHours + countTodaySubtasksHours;
 
 
@@ -298,7 +359,11 @@ class HomeState extends State<Home> {
                  ),
                  TodayPanels(nTasks: countTodayTasks,
                  nHours: countTodayTasksHours,nSubtasks: countTodaySubtasks,),
-                  AllItemsPanel(project: _project,),
+                 Visibility(
+                   child:  AllItemsPanel(project: _project,),
+                   visible: showCurrentProgress,
+                 ),
+
                ],
              ),
            ),

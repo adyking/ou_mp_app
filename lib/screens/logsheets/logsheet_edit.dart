@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ou_mp_app/models/logsheet.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_details.dart';
-import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LogSheetPageEdit extends StatefulWidget {
-  LogSheetPageEditState createState() => LogSheetPageEditState();
+
+  final int id;
+  final String projectTitle;
+
+  LogSheetPageEdit({Key key, this.id, this.projectTitle}) : super(key:key);
+
+  LogSheetPageEditState createState()
+      => LogSheetPageEditState(id: id, projectTitle: projectTitle);
 }
 
 class LogSheetPageEditState extends State<LogSheetPageEdit> {
-  String _projectTitle = 'TM470 Project';
+
+  final int id;
+  final String projectTitle;
+
+  LogSheetPageEditState({Key key, this.id, this.projectTitle});
+
+  LogSheet _logSheet;
+
+
+
   FocusNode txtFieldFocus = new FocusNode();
   FocusNode txtFieldFocusDesc = new FocusNode();
   String userHelpText;
@@ -25,13 +42,12 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
 
   @override
   void initState() {
+
+
+
+    loadData();
     super.initState();
 
-    timeSpentController.text = '1.5 hours';
-    workController.text = 'Finished off the last bits and pieces for the TMA. Reread the guide on structuring, styling and editing reports to see if I had covered everything. Rechecked TMA material to make sure that I’d included everything I was asked for. Carried out spell check. Print out – sort out – that’s it. TMA finished.';
-    problemsController.text = 'Found it difficult to organise my TMA in what would seem a logical manner for reading. Great difficulty in writing about how I tackled the TMA. Must continue to go over the sections on effective report writing.';
-    commentsController.text = 'Great relief in getting to this point. Finally I have a project skeleton. But shouldn’t wait for the verdict before pressing on!';
-    nextWorkPlannedController.text = 'Final check of TMA. Finished on time but still apprehensive about the work I have to do.';
 
   }
 
@@ -41,6 +57,23 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
   }
 
 
+
+  void loadData() async {
+
+    _logSheet = await ServicesAPI.getLogSheetById(id);
+
+
+    setState(() {
+      timeSpentController.text = _logSheet.timeSpent;
+      workController.text = _logSheet.work;
+      problemsController.text = _logSheet.problems;
+      commentsController.text = _logSheet.comments;
+      nextWorkPlannedController.text = _logSheet.nextWorkPlanned;
+    });
+
+
+
+  }
 
 
   @override
@@ -156,10 +189,66 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
     );
 
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
-    void createLogSheet() {
+                  if (title=='Error') {
 
-      displaySuccessAlert();
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          LogSheetDetails(id: id,projectTitle: projectTitle,)),);
+                  }
+
+
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void updateLogSheet() {
+
+      setState(() {
+
+        ServicesAPI.updateLogSheet(id, timeSpentController.text,
+            workController.text, problemsController.text, commentsController.text,
+            nextWorkPlannedController.text).then((value) {
+
+          if(value !=0) {
+            _showAlertDialog('Info', 'Log sheet #' + id.toString() +  ' has been updated successfully!');
+          } else {
+            _showAlertDialog('Error', 'Could not update the log sheet, '
+                'please try again.');
+
+          }
+
+
+        });
+      });
 
     }
 
@@ -184,7 +273,7 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Log Sheet Update'),
-            Text(_projectTitle, style: TextStyle(
+            Text('Log sheet no. ' + id.toString(), style: TextStyle(
               fontSize: 14.0,
             ),),
           ],
@@ -202,7 +291,7 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
 
               if (errors == false) {
                 userHelpText = null;
-                createLogSheet();
+                updateLogSheet();
 
               }
 

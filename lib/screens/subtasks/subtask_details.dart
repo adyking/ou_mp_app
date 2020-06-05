@@ -175,6 +175,8 @@ class SubtaskDetailsState extends State<SubtaskDetails> {
 
           StorageUtil.putBool('RefreshTaskDetails', true);
           StorageUtil.putBool('RefreshProjectDetails', true);
+          StorageUtil.putBool('RefreshTaskSubtasksList', true);
+
 
 
           int status;

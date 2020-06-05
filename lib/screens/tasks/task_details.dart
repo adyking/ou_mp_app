@@ -399,6 +399,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
 
              StorageUtil.putBool('RefreshProjectDetails', true);
+             StorageUtil.putBool('RefreshTaskSubtasksList', true);
 
              int status;
              if(completed){
@@ -789,7 +790,7 @@ class TaskDetailsState extends State<TaskDetails> {
                       ),
 
 
-                      Text(_subtasksList[index].allocatedHours.toString().replaceAll('.0', '') + ' hours',
+                      Text(_subtasksList[index].allocatedHours.toString().replaceAll('.0', '') + ' hour(s)',
                         style: TextStyle(fontSize: 14.0),
                       ),
 

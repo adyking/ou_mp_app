@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/subtask.dart';
+import 'package:ou_mp_app/models/TaskSubtask.dart';
 import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
 import 'package:ou_mp_app/screens/tasks/task_add.dart';
 import 'package:ou_mp_app/screens/tasks/task_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
-import 'package:ou_mp_app/models/TaskSubtask.dart';
+
 import '../../main_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 
 
 class TasksSubtasksList extends StatefulWidget{
@@ -28,11 +30,19 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
   List<TaskSubtask> _todayTasksSubtasksList = List<TaskSubtask>();
   List<TaskSubtask> _tomorrowTasksSubtasksList = List<TaskSubtask>();
   List<TaskSubtask> _allUpcomingTasksSubtasksList = List<TaskSubtask>();
+  List<TaskSubtask> _overDueTasksSubtasksList = List<TaskSubtask>();
+  List<TaskSubtask> _tasksSubtasksList = List<TaskSubtask>();
+
+
   int nInProgress = 0;
   int nCompleted = 0;
   int nOverdue = 0;
   bool _loading = true;
   bool _showPage = false;
+  bool _viewToday = false;
+  bool _viewTomorrow = false;
+  bool _viewAllUpcoming = false;
+  bool _viewOverdue = false;
 
 
   TasksSubtasksListState({Key key, this.project,this.view});
@@ -58,130 +68,213 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
   }
 
 
+
+
   void loadData() async{
 
-    DateTime today = DateTime.now();
-    var formatter = DateFormat('yyyy-MM-dd');
-    var formattedToday = formatter.format(today);
-    DateTime tomorrow = DateTime.now();
-    tomorrow = tomorrow.add(Duration(days: 1));
-    var formattedTomorrow = formatter.format(tomorrow);
+    nInProgress = 0;
+    nCompleted = 0;
+    nOverdue = 0;
 
-   _todayTasksSubtasksList =
+    _tasksSubtasksList = 
+        await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(project.id);
+
+    if (view==1){
+      _viewOverdue =true;
+      DateTime today = DateTime.now();
+      var formatter = DateFormat('yyyy-MM-dd');
+      var formattedToday = formatter.format(today);
+
+      _overDueTasksSubtasksList =
+      await ServicesAPI.getTasksSubtasksByProjectIdOverdue(project.id,
+          DateTime.parse(formattedToday),  DateTime.parse(formattedToday));
+
+
+      setState(() {
+
+        for(var i =0; i < _overDueTasksSubtasksList.length; i++){
+
+          switch(_overDueTasksSubtasksList[i].subtaskStatus) {
+            case 0 : {
+              nInProgress = nInProgress + 1;
+            }
+            break;
+
+            case 1: {
+              nCompleted = nCompleted + 1;
+            }
+            break;
+
+            case 2: {
+              nOverdue = nOverdue + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
+          }
+
+        }
+
+
+
+        _loading = false;
+        _showPage = true;
+      });
+
+
+    } else {
+      _viewToday =true;
+      _viewTomorrow=true;
+      _viewAllUpcoming=true;
+
+      DateTime today = DateTime.now();
+      var formatter = DateFormat('yyyy-MM-dd');
+      var formattedToday = formatter.format(today);
+      DateTime tomorrow = DateTime.now();
+      tomorrow = tomorrow.add(Duration(days: 1));
+      var formattedTomorrow = formatter.format(tomorrow);
+
+      _todayTasksSubtasksList =
       await ServicesAPI.getTasksSubtasksByProjectId(project.id,
           DateTime.parse(formattedToday),  DateTime.parse(formattedToday), 0);
 
-    _tomorrowTasksSubtasksList =
-    await ServicesAPI.getTasksSubtasksByProjectId(project.id,
-        DateTime.parse(formattedTomorrow),  DateTime.parse(formattedTomorrow), 0);
-
-    _allUpcomingTasksSubtasksList =
-    await ServicesAPI.getTasksSubtasksByProjectId(project.id,
-        DateTime.parse(formattedTomorrow),  DateTime.parse(formattedTomorrow), 1);
-
-    setState(() {
-      //refresh
-      for(var i =0; i < _todayTasksSubtasksList.length; i++){
-
-        switch(_todayTasksSubtasksList[i].subtaskStatus) {
-          case 0 : {
-            nInProgress = nInProgress + 1;
-          }
-          break;
-
-          case 1: {
-            nCompleted = nCompleted + 1;
-          }
-          break;
-
-          case 2: {
-            nOverdue = nOverdue + 1;
-          }
-          break;
-
-          default: {
-            //
-          }
-          break;
-        }
-
+      if(_todayTasksSubtasksList.length==0){
+        _viewToday=false;
       }
 
-      for(var i =0; i < _tomorrowTasksSubtasksList.length; i++){
+      _tomorrowTasksSubtasksList =
+      await ServicesAPI.getTasksSubtasksByProjectId(project.id,
+          DateTime.parse(formattedTomorrow),  DateTime.parse(formattedTomorrow), 0);
 
-        switch(_tomorrowTasksSubtasksList[i].subtaskStatus) {
-          case 0 : {
-            nInProgress = nInProgress + 1;
-          }
-          break;
-
-          case 1: {
-            nCompleted = nCompleted + 1;
-          }
-          break;
-
-          case 2: {
-            nOverdue = nOverdue + 1;
-          }
-          break;
-
-          default: {
-            //
-          }
-          break;
-        }
-
+      if(_tomorrowTasksSubtasksList.length==0){
+        _viewTomorrow=false;
       }
 
-      for(var i =0; i < _allUpcomingTasksSubtasksList.length; i++){
+      _allUpcomingTasksSubtasksList =
+      await ServicesAPI.getTasksSubtasksByProjectId(project.id,
+          DateTime.parse(formattedTomorrow),  DateTime.parse(formattedTomorrow), 1);
 
-        switch(_allUpcomingTasksSubtasksList[i].subtaskStatus) {
-          case 0 : {
-            nInProgress = nInProgress + 1;
-          }
-          break;
-
-          case 1: {
-            nCompleted = nCompleted + 1;
-          }
-          break;
-
-          case 2: {
-            nOverdue = nOverdue + 1;
-          }
-          break;
-
-          default: {
-            //
-          }
-          break;
-        }
-
+      if(_allUpcomingTasksSubtasksList.length==0){
+        _viewAllUpcoming=false;
       }
 
-      _loading = false;
-      _showPage = true;
-    });
+      setState(() {
+        //refresh
+        for(var i =0; i < _todayTasksSubtasksList.length; i++){
 
+          switch(_todayTasksSubtasksList[i].subtaskStatus) {
+            case 0 : {
+              nInProgress = nInProgress + 1;
+            }
+            break;
+
+            case 1: {
+              nCompleted = nCompleted + 1;
+            }
+            break;
+
+            case 2: {
+              nOverdue = nOverdue + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
+          }
+
+        }
+
+        for(var i =0; i < _tomorrowTasksSubtasksList.length; i++){
+
+          switch(_tomorrowTasksSubtasksList[i].subtaskStatus) {
+            case 0 : {
+              nInProgress = nInProgress + 1;
+            }
+            break;
+
+            case 1: {
+              nCompleted = nCompleted + 1;
+            }
+            break;
+
+            case 2: {
+              nOverdue = nOverdue + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
+          }
+
+        }
+
+        for(var i =0; i < _allUpcomingTasksSubtasksList.length; i++){
+
+          switch(_allUpcomingTasksSubtasksList[i].subtaskStatus) {
+            case 0 : {
+              nInProgress = nInProgress + 1;
+            }
+            break;
+
+            case 1: {
+              nCompleted = nCompleted + 1;
+            }
+            break;
+
+            case 2: {
+              nOverdue = nOverdue + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
+          }
+
+        }
+
+        _loading = false;
+        _showPage = true;
+      });
+
+    }
+
+
+
+
+  }
+  
+  String getPercentage(int taskId) {
+
+    int percentage = 0;
+    for(var i =0; i < _tasksSubtasksList.length; i++){
+      
+      if (taskId== _tasksSubtasksList[i].taskId){
+        
+        percentage = _tasksSubtasksList[i].percentageCompleted;
+        
+        break;
+      }
+      
+    }
+    
+    return percentage.toString() + '%';
   }
 
   @override
   Widget build(BuildContext context) {
 
-    bool _viewToday = false;
-    bool _viewTomorrow = false;
-    bool _viewAllUpcoming = false;
-    bool _viewOverdue = false;
 
 
 
-    if (view==1){
-      _viewOverdue =true;
-    } else {
-      _viewToday =true;
-      _viewTomorrow=true;
-      _viewAllUpcoming=true;
-    }
 
 
     final makeBody = Container(
@@ -509,12 +602,12 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                       Text(_todayTasksSubtasksList[index].taskName,
                         style: TextStyle(fontSize: 14.0),
                       ),
-                      Text('%',
+                      Text(getPercentage(_todayTasksSubtasksList[index].taskId),
                         style: TextStyle(fontSize: 14.0),
                       ),
 
 
-                    /*  FutureBuilder<String>(
+                      /*  FutureBuilder<String>(
                         future: _getPercentage(_todayTasksSubtasksList[index].taskId,
                             _todayTasksSubtasksList[index].taskStatus),
                         initialData: '0%',
@@ -551,12 +644,33 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                     if (subtaskId==0){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),);
+                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context)
-                          => SubtaskDetails(id:subtaskId,taskName: _todayTasksSubtasksList[index].taskName ,)),);
+                          => SubtaskDetails(id:subtaskId,taskName: _todayTasksSubtasksList[index].taskName ,)),).then((value) {
+
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     }
 
                   },
@@ -715,7 +829,7 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                         style: TextStyle(fontSize: 14.0),
                       ),
 
-                      Text('%',
+                      Text(getPercentage(_tomorrowTasksSubtasksList[index].taskId),
                         style: TextStyle(fontSize: 14.0),
                       ),
 
@@ -756,12 +870,32 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                     if (subtaskId==0){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),);
+                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context)
-                        => SubtaskDetails(id:subtaskId,taskName: _tomorrowTasksSubtasksList[index].taskName ,)),);
+                        => SubtaskDetails(id:subtaskId,taskName: _tomorrowTasksSubtasksList[index].taskName ,)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     }
                   },
                   // leading: Container(width: 10, color: Colors.red,),
@@ -919,7 +1053,7 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                         style: TextStyle(fontSize: 14.0),
                       ),
 
-                      Text('%',
+                      Text(getPercentage(_allUpcomingTasksSubtasksList[index].taskId),
                         style: TextStyle(fontSize: 14.0),
                       ),
 
@@ -961,12 +1095,32 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                     if (subtaskId==0){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),);
+                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context)
-                        => SubtaskDetails(id:subtaskId,taskName: _allUpcomingTasksSubtasksList[index].taskName ,)),);
+                        => SubtaskDetails(id:subtaskId,taskName: _allUpcomingTasksSubtasksList[index].taskName ,)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
                     }
                   },
                   // leading: Container(width: 10, color: Colors.red,),
@@ -1020,15 +1174,24 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
 
       return c;
     }
-    final subtasksId = [1];
-    final subtasks = ['Initiate the draft of text'];
-    final tasks = ['Write up on topic'];
-    final subtasksStartDate = ['Feb 12'];
-    final taskProgress = ['0%'];
-    final subtasksStatus = [2];
+
+    String initialDate(DateTime dt){
+
+      var formattedDate =  DateFormat.MMMd('en_US').format(dt);
+
+      return formattedDate;
+
+    }
+
+    // final subtasksId = [1];
+   // final subtasks = ['Initiate the draft of text'];
+   // final tasks = ['Write up on topic'];
+   // final subtasksStartDate = ['Feb 12'];
+   // final taskProgress = ['0%'];
+   // final subtasksStatus = [2];
 
 
-    final double hTasks = subtasks.length.toDouble() * 80;
+    final double hTasks = _overDueTasksSubtasksList.length.toDouble() * 80;
     double height = MediaQuery.of(context).size.height;
 
 // height without SafeArea
@@ -1043,7 +1206,7 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
       height: hTasks,
       child: ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: subtasks.length,
+        itemCount: _overDueTasksSubtasksList.length,
         itemBuilder: (context, index) {
 
           return Card(
@@ -1053,7 +1216,7 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color:  _setColorStatus(subtasksStatus[index]),
+                    color:  _setColorStatus(_overDueTasksSubtasksList[index].subtaskStatus),
                     width: 5.0,
                   ),
 
@@ -1066,31 +1229,60 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
                   subtitle: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(tasks[index],
+                      Text(_overDueTasksSubtasksList[index].taskName,
                         style: TextStyle(fontSize: 14.0),
                       ),
 
 
-                      Text(taskProgress[index],
+                      Text(getPercentage(_overDueTasksSubtasksList[index].taskId),
                         style: TextStyle(fontSize: 14.0),
                       ),
 
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SubtaskDetails(id:subtasksId[index])),);
+                    int subtaskId = _overDueTasksSubtasksList[index].subtaskId;
+                    int taskId = _overDueTasksSubtasksList[index].taskId;
+                    if (subtaskId==0){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TaskDetails(id:taskId)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context)
+                        => SubtaskDetails(id:subtaskId,taskName: _overDueTasksSubtasksList[index].taskName ,)),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshTaskSubtasksList');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshTaskSubtasksList');
+                          setState(() {
+                            loadData();
+                          });
+                        }
+
+                      });
+                    }
                   },
                   // leading: Container(width: 10, color: Colors.red,),
 
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(subtasks[index]
+                      Text(_overDueTasksSubtasksList[index].subtaskName
                       ),
 
-                      Text(subtasksStartDate[index],
+                      Text(initialDate(_overDueTasksSubtasksList[index].subtaskStartDate),
                       ),
 
                     ],
@@ -1129,7 +1321,8 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),);
+                MaterialPageRoute(builder: (context) =>
+                    MainScreen(tabIndex: 0,studentId: project.studentId,)),);
             }
 
         ),

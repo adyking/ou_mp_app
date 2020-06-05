@@ -199,14 +199,16 @@ class LogSheetPageAddState extends State<LogSheetPageAdd> {
 
       DateTime today = DateTime.now();
       var formatter = DateFormat('yyyy-MM-dd');
+      var formatter2 = DateFormat('HH:mm:ss');
       var formattedToday = formatter.format(today);
+      var formattedToday2 = formatter2.format(today);
 
-      var formattedTime = today.hour.toString() + ':' + today.minute.toString() +
-          ':' + today.second.toString();
+      //var formattedTime = today.hour.toString() + ':' + today.minute.toString() +
+        //  ':' + today.second.toString();
 
       int lastId =  await ServicesAPI.addLogSheet(project.id, timeSpentController.text,
-          workController.text, problemsController.text, nextWorkPlannedController.text,
-          DateTime.parse(formattedToday),DateTime.parse(formattedTime));
+          workController.text, problemsController.text, commentsController.text,
+          nextWorkPlannedController.text, DateTime.parse(formattedToday), formattedToday2);
 
       if(lastId !=0) {
         _showAlertDialog('Info', 'A new log sheet has been recorded successfully!');

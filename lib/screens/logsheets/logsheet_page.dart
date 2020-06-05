@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:ou_mp_app/models/logsheet.dart';
 import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_add.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_details.dart';
+import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,8 @@ class LogSheetPage extends StatefulWidget{
 class LogSheetPageState extends State<LogSheetPage> {
   final Project project;
   List<LogSheet> _logSheetList = new List<LogSheet>();
+  bool _loading = true;
+  bool _showPage = false;
 
   LogSheetPageState({Key key, this.project});
 
@@ -41,6 +45,12 @@ class LogSheetPageState extends State<LogSheetPage> {
   void loadData() async {
 
     _logSheetList = await ServicesAPI.getLogSheetsByProjectId(project.id);
+
+    setState(() {
+
+      _loading = false;
+      _showPage = true;
+    });
 
 
 
@@ -114,10 +124,30 @@ class LogSheetPageState extends State<LogSheetPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+                  Visibility(
+                    visible:  _loading,
+                    child: Column(
+                      children: <Widget>[
+                        SizedBox(height: 10.0,),
+                        CircularProgressIndicator(),
+                        SizedBox(height: 10.0,),
+                      ],
+                    ) ,
+                  ),
+                  Visibility(
+                    visible: _showPage ,
+                    child: Column(
+                      children: <Widget>[
+                        _logSheetsListView(context) ,
+                        SizedBox(height: 50.0,),
+                      ],
+                    ),
 
-                  _logSheetsListView(context) ,
+                  ),
 
-                  SizedBox(height: 50.0,),
+
+
+
 
 
                 ],
@@ -167,11 +197,13 @@ class LogSheetPageState extends State<LogSheetPage> {
     }
 
 
-    String dayTime(DateTime d, DateTime t){
+    String dayTime(DateTime d, String t){
 
-      var formattedDate =  DateFormat.MMMd('en_US').format(d);
+      var formattedDay =  DateFormat.EEEE('en_US').format(d);
+     // var formatter =   DateFormat('HH:mm');
+     
 
-      return formattedDate;
+      return formattedDay + ', ' + t.substring(0,5);
 
     }
 
@@ -201,16 +233,20 @@ class LogSheetPageState extends State<LogSheetPage> {
                   child: ListTileTheme(
                     child: ListTile(
                       // isThreeLine: true,
-                      subtitle: Text(_logSheetList[index].work),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top:5.0),
+                        child: Text(_logSheetList[index].work),
+                      ),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context)
-                            => LogSheetDetails(id:_logSheetList[index].id)),);
+                            => LogSheetDetails(id:_logSheetList[index].id,
+                              projectTitle: project.name,)),);
                       },
                       // leading: Container(width: 10, color: Colors.red,),
 
-                      title:      Text(dayTime((_logSheetList[index].loggedDate),
+                      title:  Text(dayTime((_logSheetList[index].loggedDate),
                           _logSheetList[index].loggedTime),
                         style: TextStyle(fontSize: 14.0),
                       ),
@@ -232,18 +268,52 @@ class LogSheetPageState extends State<LogSheetPage> {
 
   Widget _floatingButton(context) {
 
-    return FloatingActionButton(
-      onPressed: () {
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context)
-            => LogSheetPageAdd(project: project,)),);
-
-      },
+    return SpeedDial(
       child: Icon(Icons.add),
       backgroundColor: Color(0xff326fb4),
+      overlayColor: Colors.grey,
+
+      tooltip: 'More options',
+      animatedIcon: AnimatedIcons.menu_close,
+      children: [
+        SpeedDialChild(
+            labelBackgroundColor: Color(0xff326fb4),
+
+            backgroundColor: Color(0xff326fb4),
+            foregroundColor: Colors.white,
+
+            labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
+            child: Icon(Icons.chrome_reader_mode),
+            label: 'Return to project details',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context)
+                => ProjectDetails(projectId: project.id,)),);
+            }
+
+        ),
+
+        SpeedDialChild(
+            labelBackgroundColor: Color(0xff326fb4),
+            backgroundColor: Color(0xff326fb4),
+            //foregroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
+            child: Icon(Icons.event_note),
+            // labelWidget: Text('Auto Join', style: TextStyle(color: Colors.white),),
+            label: 'Record new log sheet',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context)
+                => LogSheetPageAdd(project: project,)),);
+            }
+        ),
+
+      ],
     );
+
 
   }
 }

@@ -4,12 +4,12 @@ import 'package:ou_mp_app/screens/agenda/agenda_page.dart';
 import 'package:ou_mp_app/screens/login/login_page.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_page.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:ou_mp_app/screens/settings/settings_page.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'screens/home/home.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:ou_mp_app/utils/sys_update.dart';
+import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
   final int tabIndex;
@@ -38,11 +38,20 @@ class MainScreenState extends State<MainScreen>{
   void initState() {
 
 
+
+
       ServicesAPI.getStudentById(studentId).then((value) {
         setState(() {
           student = value;
           _loading = false;
           _showPage = true;
+
+
+          DateTime today = DateTime.now();
+          var formatter = DateFormat('yyyy-MM-dd');
+          var formattedToday = formatter.format(today);
+          SysUpdate.updateProjectOverdue(studentId, DateTime.parse(formattedToday));
+
           if (student==null){
 
             Navigator.push(
