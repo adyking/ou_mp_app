@@ -400,6 +400,7 @@ class TaskDetailsState extends State<TaskDetails> {
 
              StorageUtil.putBool('RefreshProjectDetails', true);
              StorageUtil.putBool('RefreshTaskSubtasksList', true);
+             StorageUtil.putBool('RefreshAgenda', true);
 
              int status;
              if(completed){

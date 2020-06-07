@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:ffi';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:ou_mp_app/models/logsheet.dart';
 import 'package:ou_mp_app/models/student.dart';
@@ -9,6 +7,7 @@ import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/task.dart';
 import 'package:ou_mp_app/models/subtask.dart';
 import 'package:ou_mp_app/models/TaskSubtask.dart';
+import 'package:intl/intl.dart';
 
 class ServicesAPI {
   // Student
@@ -330,6 +329,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getTasksByProjectId.php';
   static const String overdueTaskDetailsByProjectIdUrl =
       'http://www.jteki.com/api/ou_pm/getOverdueTasksByProjectId.php';
+  static const String pendingTaskDetailsByProjectIdUrl =
+      'http://www.jteki.com/api/ou_pm/getPendingTasksByProjectId.php';
   static const String taskDetailsUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_task.php';
   static const String taskAllocatedHoursUpdateByIdUrl =
@@ -533,6 +534,31 @@ class ServicesAPI {
     }
   }
 
+  static Future<List<Task>> getPendingTasksByProjectId(int projectId) async {
+    http.Client client = new http.Client();
+    var tasks = List<Task>();
+
+    try {
+      final response = await http.post(pendingTaskDetailsByProjectIdUrl, body: {
+        'projectId': projectId.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var tasksJson = json.decode(response.body);
+
+        for (var tJson in tasksJson) {
+          tasks.add(Task.fromJson(tJson));
+        }
+      }
+
+      return tasks;
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
   static Future<Task> getTaskById(int id) async {
     final response = await http.post(taskDetailsByIdUrl, body: {
       'id': id.toString(),
@@ -558,6 +584,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getSubtaskById.php';
   static const String subtaskDetailsByTaskIdUrl =
       'http://www.jteki.com/api/ou_pm/getSubtasksByTaskId.php';
+  static const String pendingSubtaskDetailsByTaskIdUrl =
+      'http://www.jteki.com/api/ou_pm/getPendingSubtasksByTaskId.php';
   static const String subtaskDetailsUpdateByIdUrl =
       'http://www.jteki.com/api/ou_pm/update_subtask.php';
   static const String subtaskUpdateStatusByIdUrl =
@@ -660,8 +688,10 @@ class ServicesAPI {
   }
 
   static Future<int> updateSubtaskStatus(int id, int status) async {
+    http.Client client = new http.Client();
+
     try {
-      final response = await http.post(subtaskUpdateStatusByIdUrl, body: {
+      final response = await client.post(subtaskUpdateStatusByIdUrl, body: {
         'id': id.toString(),
         'status': status.toString(),
       });
@@ -680,6 +710,8 @@ class ServicesAPI {
       }
     } catch (e) {
       return 0;
+    } finally {
+      client.close();
     }
   }
 
@@ -738,6 +770,33 @@ class ServicesAPI {
       client.close();
     }
 
+  }
+
+  static Future<List<Subtask>> getPendingSubtasksByTaskId(int taskId) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(pendingSubtaskDetailsByTaskIdUrl, body: {
+        'taskId': taskId.toString(),
+      });
+
+      var subtasks = List<Subtask>();
+
+      if (response.statusCode == 200) {
+        var subtasksJson = json.decode(response.body);
+
+        for (var sJson in subtasksJson) {
+          subtasks.add(Subtask.fromJson(sJson));
+        }
+      }
+
+      return subtasks;
+    } catch (e){
+      return null;
+
+    } finally {
+      client.close();
+    }
 
   }
 
@@ -825,6 +884,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectId.php';
   static const String tasksSubtasksDetailsByProjectIdAgendaUrl =
       'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdAgenda.php';
+  static const String tasksSubtasksDetailsByProjectIdAgenda2Url =
+      'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdAgenda2.php';
   static const String tasksSubtasksDetailsByProjectIdOverdueUrl =
       'http://www.jteki.com/api/ou_pm/getTasksSubtasksByProjectIdOverdue.php';
   static const String tasksSubtasksDetailsByProjectIdWithPercentageUrl =
@@ -963,6 +1024,106 @@ class ServicesAPI {
     }
 
   }
+
+  static Future<Map<DateTime, List>> getTasksSubtasksByProjectIdAgenda2(
+      int projectId) async {
+
+    http.Client client = new http.Client();
+
+    var tasksSubtasks = Map<DateTime, List>();
+    var listTasksSubtasks = List<TaskSubtask>();
+
+    try{
+      final response = await client.post(tasksSubtasksDetailsByProjectIdAgenda2Url
+          , body: {
+            'projectId': projectId.toString(),
+            'filterOption' : '0',
+          });
+
+      if (response.statusCode == 200) {
+        var tasksSubtasksJson = json.decode(response.body);
+
+        for (var tSJson in tasksSubtasksJson) {
+
+          listTasksSubtasks.add(TaskSubtask.fromJsonAgenda(tSJson));
+        }
+
+
+        for (var i = 0; i < listTasksSubtasks.length; i++){
+          var tasksSubtasks2List = new List();
+
+          http.Client client2 = new http.Client();
+
+          try{
+            final response2 = await client2.post(tasksSubtasksDetailsByProjectIdAgenda2Url
+                , body: {
+                  'projectId': projectId.toString(),
+                  'subtaskStartDate' : listTasksSubtasks[i].subtaskStartDate.toString(),
+                  'taskStartDate' : listTasksSubtasks[i].subtaskStartDate.toString(),
+                  'filterOption' : '1',
+                });
+
+
+            if (response2.statusCode == 200) {
+
+              var tasksSubtasksJson = json.decode(response2.body);
+              var listTasksSubtasks2 = List<TaskSubtask>();
+
+              for (var tSJson in tasksSubtasksJson) {
+
+                listTasksSubtasks2.add(TaskSubtask.fromJsonAgenda(tSJson));
+              }
+
+              for (var i = 0; i < listTasksSubtasks2.length; i++){
+
+                var newMap = {
+                  'task_id': listTasksSubtasks2[i].taskId,
+                  'subtask_id': listTasksSubtasks2[i].subtaskId,
+                  'task_name': listTasksSubtasks2[i].taskName,
+                  'subtask_name': listTasksSubtasks2[i].subtaskName,
+                  'task_time': listTasksSubtasks2[i].taskAllocatedHours,
+                  'subtask_time': listTasksSubtasks2[i].subtaskAllocatedHours,
+                  'taskStatus': listTasksSubtasks2[i].taskStatus,
+                  'subtaskStatus': listTasksSubtasks2[i].subtaskStatus,
+                  'percent': '0%',
+                  'isDone': listTasksSubtasks2[i].isDone==1 ? true : false
+
+                };
+
+                tasksSubtasks2List.add(newMap);
+
+              }
+
+            }
+
+
+          }catch(e) {
+           String er = e.toString();
+          } finally {
+            client2.close();
+          }
+
+          if(tasksSubtasks2List.length!=0) {
+            var formatter = DateFormat('yyyy-MM-dd');
+            var formattedDate = formatter.format(listTasksSubtasks[i].subtaskStartDate);
+            tasksSubtasks[DateTime.parse(formattedDate)] = tasksSubtasks2List;
+          }
+
+
+
+        }
+
+      }
+
+      return tasksSubtasks;
+    }catch(e) {
+      return tasksSubtasks;
+    } finally {
+      client.close();
+    }
+
+  }
+
 
 
   static Future<List<TaskSubtask>> getTasksSubtasksByProjectIdListWithPercentage(

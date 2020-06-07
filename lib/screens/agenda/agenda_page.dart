@@ -4,12 +4,14 @@ import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/student.dart';
 
 import 'package:ou_mp_app/screens/subtasks/subtask_details.dart';
+import 'package:ou_mp_app/screens/tasks/task_details.dart';
 
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/models/TaskSubtask.dart';
 
 import 'package:flutter_clean_calendar/flutter_clean_calendar.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
+import 'package:ou_mp_app/utils/storage_util.dart';
 
 
 class AgendaPage extends StatefulWidget{
@@ -30,6 +32,7 @@ class AgendaPageState extends State<AgendaPage> {
   List<TaskSubtask> _tasksSubtasksList = List<TaskSubtask>();
   List<TaskSubtask> _tasksSubtasksListPercentage = List<TaskSubtask>();
   Map<DateTime, List> _agendaTasksSubtasks = Map<DateTime, List>() ;
+
   bool _loading = true;
   bool _showPage = false;
 
@@ -57,32 +60,82 @@ class AgendaPageState extends State<AgendaPage> {
     _project = await ServicesAPI.getCurrentProjectByStudentId(student.id);
 
 
-    _tasksSubtasksListPercentage =
-    await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(_project.id);
+    _tasksSubtasksListPercentage = await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(_project.id);
     
     _tasksSubtasksList = await ServicesAPI.getTasksSubtasksByProjectIdAgenda(_project.id);
 
-    var map2 = {};
-    _tasksSubtasksList.forEach((taskSubtask) => _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = [
-      {
 
-        'task_id' : taskSubtask.taskId,
-        'subtask_id' : taskSubtask.subtaskId,
-        'task_name' : taskSubtask.taskName,
-        'subtask_name': taskSubtask.subtaskName,
-        'task_time' : taskSubtask.taskAllocatedHours,
-        'subtask_time' : taskSubtask.subtaskAllocatedHours,
-        'taskStatus' : taskSubtask.taskStatus,
-        'subtaskStatus' : taskSubtask.subtaskStatus,
-        'percent' : '0%',
-        'isDone' : true
+   // _agendaTasksSubtasks = await ServicesAPI.getTasksSubtasksByProjectIdAgenda2(_project.id);
+
+
+
+ /*   _tasksSubtasksList.forEach((taskSubtask) => _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = [
+
+    {
+
+      'task_id': taskSubtask.taskId,
+      'subtask_id': taskSubtask.subtaskId,
+      'task_name': taskSubtask.taskName,
+      'subtask_name': taskSubtask.subtaskName,
+      'task_time': taskSubtask.taskAllocatedHours,
+      'subtask_time': taskSubtask.subtaskAllocatedHours,
+      'taskStatus': taskSubtask.taskStatus,
+      'subtaskStatus': taskSubtask.subtaskStatus,
+      'percent': '0%',
+      'isDone': true
+
+    },
+
+    ],
+
+    );*/
+
+
+
+    _tasksSubtasksList.forEach((taskSubtask) {
+
+      var keyDate = taskSubtask.subtaskStartDate;
+
+      var tasksSubtasks2List = new List();
+
+
+      for (var i = 0; i < _tasksSubtasksList.length; i++){
+
+        if(keyDate== _tasksSubtasksList[i].subtaskStartDate){
+
+          var newMap = {
+            'task_id': _tasksSubtasksList[i].taskId,
+            'subtask_id': _tasksSubtasksList[i].subtaskId,
+            'task_name': _tasksSubtasksList[i].taskName,
+            'subtask_name': _tasksSubtasksList[i].subtaskName,
+            'task_time': _tasksSubtasksList[i].taskAllocatedHours,
+            'subtask_time': _tasksSubtasksList[i].subtaskAllocatedHours,
+            'taskStatus': _tasksSubtasksList[i].taskStatus,
+            'subtaskStatus': _tasksSubtasksList[i].subtaskStatus,
+            'percent': '0%',
+            'isDone': _tasksSubtasksList[i].isDone== 1 ? true : false
+
+          };
+
+          tasksSubtasks2List.add(newMap);
+        }
+
+
       }
 
-    ]);
-    print(_agendaTasksSubtasks);
-    _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
-    setState(() {
+      _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = tasksSubtasks2List;
 
+
+
+
+    }
+
+    );
+
+
+
+    setState(() {
+      _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
       _loading = false;
       _showPage = true;
     });
@@ -111,7 +164,7 @@ class AgendaPageState extends State<AgendaPage> {
       _selectedDay = date;
       _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
     });
-    print(_selectedTasks);
+ //   print(_selectedTasks);
 
 
 
@@ -146,6 +199,35 @@ class AgendaPageState extends State<AgendaPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    Color _setEventColor (Map<DateTime, List> agenda) {
+
+      Color c;
+      c = Colors.red;
+      agenda.forEach((key, value) {
+
+
+        value.forEach((element) {
+
+          var taskId = element[0].toString();
+          var lol = element['isDone'];
+
+
+          if(lol==true) {
+            c = Colors.black;
+          }
+
+          print(element);
+
+        });
+
+        print(key.toString() + ' ' + value.toString());
+      });
+
+        return c;
+    }
+
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -164,7 +246,6 @@ class AgendaPageState extends State<AgendaPage> {
                 });
               },
             ),
-
 
           ],
           centerTitle: true,
@@ -201,7 +282,7 @@ class AgendaPageState extends State<AgendaPage> {
                   selectedColor: DefaultThemeColor,
                   todayColor: DefaultThemeColor,
 
-                  eventColor: DefaultThemeColor,
+                  eventColor: Colors.grey,
                   dayOfWeekStyle: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.w800,
@@ -316,9 +397,48 @@ class AgendaPageState extends State<AgendaPage> {
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SubtaskDetails(id:_selectedTasks[index]['subtask_id'])),);
+
+                    _loading = true;
+                    _showPage = false;
+
+
+                    if(_selectedTasks[index]['subtask_id']!=0){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) =>
+                            SubtaskDetails(id:_selectedTasks[index]['subtask_id'],
+                                taskName: _selectedTasks[index]['task_name'])),).then((value) {
+                        bool refresh = StorageUtil.getBool('RefreshAgenda');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshAgenda');
+                          setState(() {
+                            _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
+                            loadData();
+                          });
+                        }
+
+                      });
+
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TaskDetails(id:_selectedTasks[index]['task_id'])),).then((value)  {
+                        bool refresh = StorageUtil.getBool('RefreshAgenda');
+
+                        if(refresh){
+                          StorageUtil.removeKey('RefreshAgenda');
+                          setState(() {
+                            _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
+                            loadData();
+                          });
+                        }
+
+                      });
+
+                    }
+
+
                   },
                   // leading: Container(width: 10, color: Colors.red,),
 

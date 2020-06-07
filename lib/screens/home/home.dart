@@ -83,6 +83,7 @@ class HomeState extends State<Home> {
 
     //if (diffDays > 0) {
         await SysUpdate.updateTasksSubtasksOverdue(_project.id, DateTime.parse(formattedToday));
+        await SysUpdate.updateSubtasksOverdue(_project.id);
   //  }
 
     if(_project==null){
