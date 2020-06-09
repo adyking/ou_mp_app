@@ -400,7 +400,7 @@ class AgendaPageState extends State<AgendaPage> {
 
                     _loading = true;
                     _showPage = false;
-
+                  _selectedDay = DateTime.now();
 
                     if(_selectedTasks[index]['subtask_id']!=0){
                       Navigator.push(
@@ -413,7 +413,7 @@ class AgendaPageState extends State<AgendaPage> {
                         if(refresh){
                           StorageUtil.removeKey('RefreshAgenda');
                           setState(() {
-                            _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
+
                             loadData();
                           });
                         }
@@ -429,7 +429,7 @@ class AgendaPageState extends State<AgendaPage> {
                         if(refresh){
                           StorageUtil.removeKey('RefreshAgenda');
                           setState(() {
-                            _selectedTasks = _agendaTasksSubtasks[_selectedDay] ?? [];
+
                             loadData();
                           });
                         }

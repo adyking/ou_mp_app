@@ -248,7 +248,7 @@ Widget _accountListView(BuildContext context) {
 
 Widget _aboutListView(BuildContext context) {
 
-  final titles = ['Give your feedback', 'Terms of use'];
+  final titles = ['Give your feedback', 'Terms of service'];
   final titlesSub = ['What do you think of this app?','Legal information about this app'];
   final double hAccount = titles.length.toDouble() * 80;
   final icons = [Icon(Icons.send,color: Color(0xff326fb4)),

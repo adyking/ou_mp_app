@@ -11,6 +11,10 @@ import 'package:intl/intl.dart';
 
 class ServicesAPI {
   // Student
+  static const String newStudentUrl = 'http://www.jteki.com/api/ou_pm/sign_up.php';
+  static const String sendEmailRegStudentUrl =
+      'http://www.jteki.com/api/ou_pm/sendRegEmailConfirmation.php';
+  static const String checkEmailExistsUrl = 'http://www.jteki.com/api/ou_pm/checkEmailExists.php';
   static const String loginUrl = 'http://www.jteki.com/api/ou_pm/login.php';
   static const String signUpUrl = 'http://www.jteki.com/api/ou_pm/sign_up.php';
   static const String activateAccountUrl =
@@ -18,6 +22,64 @@ class ServicesAPI {
   static const String studentDetailsUrl =
       'http://www.jteki.com/api/ou_pm/getStudentById.php';
 
+
+  static Future<int> addStudent(String name, String email,
+      String password, String activationCode) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(newStudentUrl, body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'activationCode': activationCode
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+       // print(studentJson);
+        var lastId = studentJson['Response']['insertedId'];
+        return lastId;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+
+    }
+  }
+
+  static Future<int> sendEmailRegStudent(String name, String email,
+      String password, String activationCode) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(sendEmailRegStudentUrl, body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'activationCode': activationCode
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+
+        int resp = studentJson['Response'];
+        return resp;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+
+    }
+  }
   static Future<Student> getStudentByLogin(
       String email, String password) async {
     try {
@@ -44,6 +106,35 @@ class ServicesAPI {
     }
   }
 
+  static Future<Student> checkStudentEmailExists(
+      String email) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(checkEmailExistsUrl, body: {
+        'email': email,
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+
+        Student student;
+
+        for (var stJson in studentJson) {
+          student = Student.fromJson(stJson);
+        }
+
+        return student;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+
+    }
+  }
   static Future<Student> getStudentById(int id) async {
     http.Client client = new http.Client();
 
