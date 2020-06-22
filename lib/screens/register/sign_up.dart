@@ -371,7 +371,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
     return Scaffold(
 
       appBar: AppBar(
-
         title: Text(appBarTitle, style: AppBarTheme.of(context).textTheme.title,),
         backgroundColor: AppBarBackgroundColor,
         centerTitle: true,

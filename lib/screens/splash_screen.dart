@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ou_mp_app/utils/storage_util.dart';
 import 'package:ou_mp_app/screens/default.dart';
 import 'package:splashscreen/splashscreen.dart';
-
-import '../main_screen.dart';
 import '../style.dart';
-import 'login/login_page.dart';
+
 
 class SplashScreenPage extends StatefulWidget {
   SplashScreenPageState createState() => SplashScreenPageState();
@@ -48,14 +46,6 @@ class SplashScreenPageState extends State<SplashScreenPage> {
         onClick: (){},
         loaderColor: Colors.white,
     );
-  }
-
-  Future _getThingsOnStartup() async {
-
-
-    await Future.delayed(Duration(seconds: 2));
-
-
   }
 
 }

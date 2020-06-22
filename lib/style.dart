@@ -64,20 +64,20 @@ const Body1TextStyle = TextStyle (
 
 const setBoxShadow = BoxShadow(
   color: Colors.grey,
-  blurRadius: 10.0, // has the effect of softening the shadow
-  spreadRadius: 0.0, // has the effect of extending the shadow
+  blurRadius: 10.0,
+  spreadRadius: 0.0,
   offset: Offset(
-    1.0, // horizontal, move right 10
-    1.0, // vertical, move down 10
+    1.0,
+    1.0,
   ),
 );
 
 const setBoxShadowLogin = BoxShadow(
   color: Colors.white,
-  blurRadius: 10.0, // has the effect of softening the shadow
-  spreadRadius: 0.0, // has the effect of extending the shadow
+  blurRadius: 10.0,
+  spreadRadius: 0.0,
   offset: Offset(
-    1.0, // horizontal, move right 10
-    1.0, // vertical, move down 10
+    1.0,
+    1.0,
   ),
 );
