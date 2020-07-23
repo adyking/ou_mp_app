@@ -1,11 +1,16 @@
 
 import 'package:flutter/material.dart';
+import 'package:ou_mp_app/models/student.dart';
+import 'package:ou_mp_app/screens/login/login_page.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:ou_mp_app/utils/services_api.dart';
 
 class EditProfile extends StatefulWidget{
+  final Student student;
 
-  EditProfileState  createState() => EditProfileState();
+  EditProfile({Key key, this.student}) : super(key: key);
+  EditProfileState  createState() => EditProfileState(student: student);
 }
 
 class EditProfileState extends State<EditProfile> {
@@ -13,6 +18,9 @@ class EditProfileState extends State<EditProfile> {
   String appBarTitle = 'Edit Profile';
   bool termsOfUse = false;
   String userHelpText;
+  final Student student;
+
+  EditProfileState({Key key, this.student});
 
   FocusNode txtFieldFocus = new FocusNode();
 
@@ -26,10 +34,10 @@ class EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
-    fullNameController.text = 'Adilson Jacinto';
-    emailController.text = 'apaj2@ou.ac.uk';
-    passwordController.text = 'Angolano87';
-    passwordConfirmController.text = 'Angolano87';
+    fullNameController.text = student.name;
+    emailController.text = student.email;
+    passwordController.text = student.password;
+    passwordConfirmController.text = student.password;
   }
 
   @override
@@ -69,6 +77,8 @@ class EditProfileState extends State<EditProfile> {
     );
 
     final makeEmail = TextField(
+      readOnly: true,
+      enabled: false,
       keyboardType: TextInputType.emailAddress,
       controller: emailController,
       decoration: InputDecoration(
@@ -193,7 +203,7 @@ class EditProfileState extends State<EditProfile> {
             if (userHelpText != '') {
               userHelpText = userHelpText + '\n\n';
             }
-            userHelpText = userHelpText + 'Paswwords don\'t matach, please retype them.';
+            userHelpText = userHelpText + 'Passwords don\'t match, please retype them.';
           } else {
 
             int chars = passwordController.text.length;
@@ -203,7 +213,7 @@ class EditProfileState extends State<EditProfile> {
               if (userHelpText != '') {
                 userHelpText = userHelpText + '\n\n';
               }
-              userHelpText = userHelpText + 'Paswword length must be greater than 6 characters long.';
+              userHelpText = userHelpText + 'Password length must be greater than 6 characters long.';
             }
 
           }
@@ -216,11 +226,114 @@ class EditProfileState extends State<EditProfile> {
       return errors;
     }
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
-    void createUser () {
-      displaySuccessAlert();
+                  if (title=='Error') {
+
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          LoginPage()),);
+                  }
 
 
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void editUser () {
+      setState(() {
+
+        ServicesAPI.updateStudentProfile(student.id, fullNameController.text,
+            passwordController.text).then((value) {
+
+          if(value !=0) {
+            _showAlertDialog('Info', 'Your profile has been updated successfully, you will be redirected to the login page!');
+          } else {
+            _showAlertDialog('Error', 'Could not update your profile, '
+                'please try again.');
+
+          }
+
+
+        });
+      });
+
+
+    }
+
+    Future<void> _showAlertConfirmDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('YES'),
+                onPressed: () {
+                  //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteStudentProfile(student.id).then((value) {
+
+                    if(value==1){
+                      var msg = 'Your profile has been deleted successfully!';
+                      _showAlertDialog('Info', msg);
+                    } else {
+                      var msg = 'Could not delete your profile, please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+                  // });
+                },
+              ),
+
+              FlatButton(
+                child: Text('NO'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
 
     return Scaffold(
@@ -241,8 +354,19 @@ class EditProfileState extends State<EditProfile> {
 
               if (errors == false) {
                 userHelpText = null;
-                createUser();
+                editUser();
               }
+            },
+          ),
+
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+
+              var msg = 'Are you sure you want to delete your profile?\n\nNote that all the data associated to your profile will be removed!';
+              _showAlertConfirmDialog('Confirm', msg);
+
+
             },
           ),
         ],
@@ -300,8 +424,8 @@ class EditProfileState extends State<EditProfile> {
     Alert(
       context: context,
       type: AlertType.success,
-      title: "Sucess",
-      desc: "New account has been created sucessfully!\nYou will receive an email with an activation code.",
+      title: "Success",
+      desc: "New account has been created successfully!\nYou will receive an email with an activation code.",
       buttons: [
         DialogButton(
           child: Text(

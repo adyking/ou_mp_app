@@ -21,6 +21,10 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/activate_acc.php';
   static const String studentDetailsUrl =
       'http://www.jteki.com/api/ou_pm/getStudentById.php';
+  static const String studentUpdateProfileUrl =
+      'http://www.jteki.com/api/ou_pm/student_update_profile.php';
+  static const String studentDeleteProfileUrl =
+      'http://www.jteki.com/api/ou_pm/student_delete_profile.php';
 
 
   static Future<int> addStudent(String name, String email,
@@ -49,6 +53,66 @@ class ServicesAPI {
 
       client.close();
 
+    }
+  }
+
+  static Future<int> updateStudentProfile(int id, String name, String password) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(studentUpdateProfileUrl, body: {
+        'id': id.toString(),
+        'name': name,
+        'password': password,
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+        print(studentJson);
+        int result = 0;
+
+        if (studentJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+    }
+  }
+
+  static Future<int> deleteStudentProfile(int id) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(studentDeleteProfileUrl, body: {
+        'id': id.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+        print(studentJson);
+        int result = 0;
+
+        if (studentJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
     }
   }
 
@@ -1382,6 +1446,38 @@ class ServicesAPI {
       return 0;
     } finally {
       client.close();
+    }
+  }
+
+
+  // Feedback
+  static const String sendFeedbackUrl =
+      'http://www.jteki.com/api/ou_pm/sendFeedbackEmail.php';
+
+
+  static Future<int> sendEmailFeedback(String txt) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(sendFeedbackUrl, body: {
+        'txt': txt,
+
+      });
+
+      if (response.statusCode == 200) {
+        var feedbackJson = json.decode(response.body);
+
+        int resp = feedbackJson['Response'];
+        return resp;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+
     }
   }
 

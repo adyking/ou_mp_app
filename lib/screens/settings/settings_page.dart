@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/models/student.dart';
+import 'package:ou_mp_app/screens/credits/credits.dart';
 import 'package:ou_mp_app/screens/login/login_page.dart';
+import 'package:ou_mp_app/screens/profile/edit_profile.dart';
 import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
+import 'package:ou_mp_app/screens/terms/terms_page.dart';
 import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/screens/feedback/feedback.dart';
 
 
 
@@ -101,7 +105,7 @@ class SettingsPage extends StatelessWidget {
               padding: const EdgeInsets.all(10.0),
               child: Text('ACCOUNT', style: PanelTitleTextStyle,),
             ),
-              _accountListView(context,)
+              _accountListView(context, student)
 
           ],
 
@@ -123,7 +127,7 @@ class SettingsPage extends StatelessWidget {
               padding: const EdgeInsets.all(10.0),
               child: Text('ABOUT', style: PanelTitleTextStyle,),
             ),
-            _aboutListView(context,)
+            _aboutListView(context)
 
           ],
 
@@ -180,7 +184,7 @@ class SettingsPage extends StatelessWidget {
 
 
 
-Widget _accountListView(BuildContext context) {
+Widget _accountListView(BuildContext context, Student student) {
 
   final titles = ['Logout', 'Edit profile'];
   final titlesSub = ['Logout from the app','Edit your account information e.g. password, name'];
@@ -217,9 +221,12 @@ Widget _accountListView(BuildContext context) {
                     case 1:
                       {
 
-
+                        Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => EditProfile(student: student,)),);
                       }
                       break;
+
+
                     default:
                       {
 
@@ -248,11 +255,13 @@ Widget _accountListView(BuildContext context) {
 
 Widget _aboutListView(BuildContext context) {
 
-  final titles = ['Give your feedback', 'Terms of service'];
-  final titlesSub = ['What do you think of this app?','Legal information about this app'];
+  final titles = ['Give your feedback', 'Terms of service', 'Credits'];
+  final titlesSub = ['What do you think of this app?','Legal information about this app', 'Attribution to the author'];
   final double hAccount = titles.length.toDouble() * 80;
   final icons = [Icon(Icons.send,color: Color(0xff326fb4)),
-    Icon(Icons.perm_device_information,color: Color(0xff326fb4)),];
+    Icon(Icons.perm_device_information,color: Color(0xff326fb4)),
+    Icon(Icons.import_contacts,color: Color(0xff326fb4)),
+  ];
 
 
   return Container(
@@ -275,12 +284,24 @@ Widget _aboutListView(BuildContext context) {
                   switch (index) {
                     case 0:
                       {
-
+                        Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => FeedbackPage()),);
 
                       }
                       break;
                     case 1:
                       {
+                        Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => TermsPage()),);
+
+
+                      }
+                      break;
+                    case 2:
+                      {
+                        Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => CreditsPage()),);
+
 
 
                       }

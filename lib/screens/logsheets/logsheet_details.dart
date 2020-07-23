@@ -93,6 +93,7 @@ class LogSheetDetailsState extends State<LogSheetDetails> {
       var formattedDate =  DateFormat.yMMMd('en_US').format(dt);
       var formattedDay =  DateFormat.EEEE('en_US').format(dt);
 
+
       return formattedDay + ' - ' + formattedDate;
 
     }

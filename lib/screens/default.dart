@@ -16,9 +16,6 @@ class DefaultPageState extends State<DefaultPage> {
   var _navTo;
 
 
-
-
-
   @override
   Widget build(BuildContext context) {
 
@@ -33,13 +30,6 @@ class DefaultPageState extends State<DefaultPage> {
     } else {
       _navTo = new LoginPage();
     }
-
-
-    //Navigator.pushNamed(context, '/m');
-  // Navigator.of(context).pushNamedAndRemoveUntil('/m', (Route<dynamic> route) => false);
-  //  Navigator.push(
-    //  context,
-      //MaterialPageRoute(builder: (context) => MainScreen(tabIndex: 0,)),);
 
     return new SplashScreen(
       seconds: 0,

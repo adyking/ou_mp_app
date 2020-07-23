@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/screens/login/login_page.dart';
+import 'package:ou_mp_app/screens/terms/terms_page.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -145,17 +146,7 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
       length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 
-  String _randomString(int length) {
-    var rand = new Random();
-    var codeUnits = new List.generate(
-        length,
-            (index){
-          return rand.nextInt(33)+89;
-        }
-    );
 
-    return new String.fromCharCodes(codeUnits);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -274,21 +265,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
 
 
 
-    void checkEmailExists () async {
-      var student = await ServicesAPI.checkStudentEmailExists(emailController.text);
-      if (student!=null){
-
-        setState(() {
-          if (userHelpText != '') {
-            userHelpText = userHelpText + '\n\n';
-          }
-          userHelpText = userHelpText + 'Email address already exists, please use a different one.';
-        });
-
-      }
-
-    }
-
     bool checkFields()  {
       bool errors = false;
       setState(() {
@@ -362,9 +338,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
     void createUser () {
       doSignUp();
 
-      //displaySuccessAlert();
-
-
     }
     double readWidth = MediaQuery.of(context).size.width*0.80;
 
@@ -379,7 +352,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
             icon: Icon(Icons.check),
             onPressed: () {
               userHelpText = '';
-              //print(sCategory);
               bool errors = false;
              // checkEmailExists();
               errors = checkFields();
@@ -399,7 +371,6 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
                       userHelpText = null;
                       createUser();
                     }
-
 
                   });
 
@@ -458,6 +429,9 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
                               child: InkWell(
 
                                 onTap: () {
+                                  Navigator.push(
+                                    context, MaterialPageRoute(builder: (context) =>
+                                      TermsPage()),);
 
                                 },
                                 child: Text(

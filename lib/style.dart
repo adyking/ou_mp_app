@@ -5,6 +5,7 @@ const LargeTextSize = 26.0;
 const MediumTextSize = 20.0;
 const AppBarTextSize = 18.0;
 const BodyTextSize = 16.0;
+const BodySubTextSize = 14.0;
 const AppBarHeight = 100.0;
 const AppBarBackgroundColor = Color(0xff326fb4);
 const BottomBarColorActive = Color(0xff326fb4);
@@ -36,7 +37,6 @@ const AppBarTextStyle = TextStyle (
   color: Colors.white,
 
 );
-
 
 const PanelTitleTextStyle = TextStyle (
   fontFamily: FontNameDefault,

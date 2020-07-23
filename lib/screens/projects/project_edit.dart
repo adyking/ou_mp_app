@@ -354,7 +354,7 @@ class ProjectPageEditState extends State<ProjectPageEdit> {
             sEndDate).then((value) {
 
           if(value !=0) {
-            _showAlertDialog('Info', 'Project hs been updated successfully!');
+            _showAlertDialog('Info', 'Project has been updated successfully!');
           } else {
             _showAlertDialog('Error', 'Could not update the project details, '
                 'please try again.');
