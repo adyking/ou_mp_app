@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
+import 'package:ou_mp_app/screens/reminder/reminder_page.dart';
 import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:ou_mp_app/style.dart';
@@ -77,7 +78,7 @@ class AllItemsPanelState extends State<AllItemsPanel> {
     final _pad = 10.0;
 
     final makeAllItems = Container(
-      height: 200,
+      height: 255,
       decoration:  BoxDecoration(
        // color: Colors.grey[200],
         borderRadius: BorderRadius.circular(10.0),
@@ -113,11 +114,14 @@ class AllItemsPanelState extends State<AllItemsPanel> {
 
   Widget _myListView(BuildContext context) {
 
-    final titles = ['All Tasks & Subtasks', 'Log Sheets', 'Overdue Tasks & Subtasks'];
+    final titles = ['All Tasks & Subtasks', 'Log Sheets', 'Overdue Tasks & Subtasks', 'Reminders'];
 
     final icons = [Icon(Icons.assignment,color: Color(0xff326fb4)),
       Icon(Icons.event_note,color: Color(0xff326fb4)),
-      Icon(Icons.assignment_late,color: Color(0xff326fb4))];
+      Icon(Icons.assignment_late,color: Color(0xff326fb4)),
+      Icon(Icons.notifications,color: Color(0xff326fb4)),
+
+    ];
 
     return ListView.builder(
       itemCount: titles.length,
@@ -126,6 +130,7 @@ class AllItemsPanelState extends State<AllItemsPanel> {
 
         return Card( //                           <-- Card widget
           child: Container(
+
             color: Colors.white,
             child: ListTileTheme(
               selectedColor: Colors.red,
@@ -161,6 +166,17 @@ class AllItemsPanelState extends State<AllItemsPanel> {
                             context,
                             MaterialPageRoute(builder: (context)
                             => TasksSubtasksList(project: project,view: 1,)),);
+                        }
+
+                      }
+                      break;
+                    case 3:
+                      {
+                        if(project!=null){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)
+                            => ReminderPage(project: project,)),);
                         }
 
                       }

@@ -17,7 +17,7 @@ class TermsPage extends StatelessWidget {
       '\n\n\nStoring Data: Like many app operators, we only store information that you want us to store when you use our App ("Storing Data").'
       '\n\nThis data may include your projects and their tasks and subtasks, as well as logsheets and  reminders. This data can be easily removed by yourself by deleting the information stored for your account.';
 
-  final String dataProtection = 'JTeki is registered under the data protection act with the Information Commissioner\'s Office (ICO) under registration: XXXXX'
+  final String dataProtection = 'JTeki is registered under the data protection act with the Information Commissioner\'s Office (ICO) under registration: A8720552'
       '\n\nScope: JTeki retains only the information provided by the users. To be compliant with GDPR, information collected lawfully and used fairly, stored safely and not disclosed to any other person unlawfully. To do this, the organisation complies with the Data Protection Principles, which are set out in the Data Protection Act 2018.'
       '\n\n\nJTeki, as far as reasonably practicable, complies with the Data Protection Principles contained in the Data Protection Act to ensure all data is:'
       '\n\n- Fairly and lawfully processed\n- Processed for lawful purpose\n- Adequate, relevant and not excessive\n- Accurate and up to date\n- Held for no longer than is absolutely necessary\n- Processed in accordance with the rights of the data subject\n- Protected in the appropriate way\n- Not transferred to any other countries without adequate protection and consent'

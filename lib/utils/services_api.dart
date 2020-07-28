@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:ou_mp_app/models/logsheet.dart';
+import 'package:ou_mp_app/models/reminder.dart';
 import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/models/task.dart';
@@ -1326,9 +1327,9 @@ class ServicesAPI {
   static const String logSheetDetailsByIdUrl =
       'http://www.jteki.com/api/ou_pm/getLogSheetById.php';
   static const String logSheetUpdateUrl =
-      'http://www.jteki.com/api/ou_pm/log_sheet_update.php';
+        'http://www.jteki.com/api/ou_pm/log_sheet_update.php';
 
-  static Future<List<LogSheet>> getLogSheetsByProjectId(int projectId) async {
+    static Future<List<LogSheet>> getLogSheetsByProjectId(int projectId) async {
 
     http.Client client = new http.Client();
 
@@ -1480,5 +1481,103 @@ class ServicesAPI {
 
     }
   }
+
+
+
+  // Reminder
+  static const String reminderListByProjectIdUrl =
+      'http://www.jteki.com/api/ou_pm/getRemindersByProjectId.php';
+  static const String reminderAddUrl =
+      'http://www.jteki.com/api/ou_pm/reminder_add.php';
+  static const String reminderDetailsByIdUrl =
+      'http://www.jteki.com/api/ou_pm/getReminderById.php';
+
+
+  static Future<List<Reminder>> getRemindersByProjectId(int projectId) async {
+
+    http.Client client = new http.Client();
+
+    try{
+      final response = await client.post(reminderListByProjectIdUrl, body: {
+        'projectId': projectId.toString(),
+      });
+
+      var reminders = List<Reminder>();
+
+      if (response.statusCode == 200) {
+        var remindersJson = json.decode(response.body);
+
+        for (var rJson in remindersJson) {
+          reminders.add(Reminder.fromJson(rJson));
+        }
+      }
+
+      return reminders;
+    } catch (e){
+      return null;
+    } finally {
+
+      client.close();
+    }
+
+  }
+
+
+  static Future<int> addReminder(int projectId, String reminderText,
+      DateTime cutOffDate, DateTime alertDate1, DateTime alertDate2,
+      DateTime alertDate3) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(reminderAddUrl, body: {
+        'projectId': projectId.toString(),
+        'reminderText': reminderText,
+        'cutOffDate': cutOffDate.toString(),
+        'alertDate1': alertDate1.toString(),
+        'alertDate2': alertDate2.toString(),
+        'alertDate3': alertDate3.toString(),
+
+      });
+
+      if (response.statusCode == 200) {
+        var reminderJson = json.decode(response.body);
+        print(reminderJson);
+        var lastId = reminderJson['Response']['insertedId'];
+        return lastId;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<Reminder> getReminderById(int id) async {
+    http.Client client = new http.Client();
+    Reminder reminder;
+
+    try {
+      final response = await client.post(reminderDetailsByIdUrl, body: {
+        'id': id.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var reminderJson = json.decode(response.body);
+
+        for (var rJson in reminderJson) {
+          reminder = Reminder.fromJson(rJson);
+        }
+      }
+
+      return reminder;
+    } catch (e) {
+      return null;
+    } finally {
+      client.close();
+    }
+  }
+
 
 }
