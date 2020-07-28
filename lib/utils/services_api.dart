@@ -24,6 +24,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getStudentById.php';
   static const String studentUpdateProfileUrl =
       'http://www.jteki.com/api/ou_pm/student_update_profile.php';
+  static const String studentUpdateTokenUrl =
+      'http://www.jteki.com/api/ou_pm/student_update_device_token.php';
   static const String studentDeleteProfileUrl =
       'http://www.jteki.com/api/ou_pm/student_delete_profile.php';
 
@@ -65,6 +67,37 @@ class ServicesAPI {
         'id': id.toString(),
         'name': name,
         'password': password,
+      });
+
+      if (response.statusCode == 200) {
+        var studentJson = json.decode(response.body);
+        print(studentJson);
+        int result = 0;
+
+        if (studentJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+
+      client.close();
+    }
+  }
+
+  static Future<int> updateStudentToken(int id, String token) async {
+    http.Client client = new http.Client();
+
+    try {
+      final response = await client.post(studentUpdateTokenUrl, body: {
+        'id': id.toString(),
+        'token': token,
+
       });
 
       if (response.statusCode == 200) {

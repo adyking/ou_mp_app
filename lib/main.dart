@@ -7,6 +7,7 @@ import 'package:ou_mp_app/screens/splash_screen.dart';
 import 'main_screen.dart';
 import 'style.dart';
 
+
 void main() => runApp(MyApp());
 
 
@@ -16,6 +17,8 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
+
+
 
   @override
   void initState() {

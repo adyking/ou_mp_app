@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/agenda/agenda_page.dart';
@@ -30,15 +31,15 @@ class MainScreenState extends State<MainScreen>{
   Student student;
   bool _loading = true;
   bool _showPage = false;
+  static bool _isConfigured = false;
+  final FirebaseMessaging _fcm = FirebaseMessaging();
 
   MainScreenState({Key key, this.selectedScreen, this.studentId});
 
 
   @override
   void initState() {
-
-
-
+    super.initState();
 
       ServicesAPI.getStudentById(studentId).then((value) {
         setState(() {
@@ -64,7 +65,40 @@ class MainScreenState extends State<MainScreen>{
       });
 
 
-    super.initState();
+    if (!_isConfigured) {
+
+      _fcm.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print("onMessage: $message");
+          //_showItemDialog(message);
+          String title = message['notification']['title'];
+          String body = message['notification']['body'];
+          print(title + ' ---- ' + body);
+
+
+        },
+
+        onLaunch: (Map<String, dynamic> message) async {
+          print("onLaunch: $message");
+          //_navigateToItemDetail(message);
+        },
+        onResume: (Map<String, dynamic> message) async {
+          print("onResume: $message");
+          // _navigateToItemDetail(message);
+          String title = message['data']['title'];
+          String body = message['data']['body'];
+          print(title + ' ---- ' + body);
+        },
+      );
+
+      _fcm.requestNotificationPermissions(
+          const IosNotificationSettings(sound: true, badge: true, alert: true)
+      );
+      _isConfigured = true;
+    }
+
+
+
   }
 
   @override

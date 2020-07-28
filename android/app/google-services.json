@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "759862135257",
+    "firebase_url": "https://oupm-e13e2.firebaseio.com",
+    "project_id": "oupm-e13e2",
+    "storage_bucket": "oupm-e13e2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759862135257:android:90de8de5013bc3767cf1c8",
+        "android_client_info": {
+          "package_name": "com.jteki.ou_mp_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "759862135257-fs9lfab3t1oj62lah5famj4hcrpurfh2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgQT58oHj2NzM5UOO4Z42iFZpU-ToLnO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "759862135257-fs9lfab3t1oj62lah5famj4hcrpurfh2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

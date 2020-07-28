@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:ou_mp_app/main_screen.dart';
 import 'package:ou_mp_app/models/student.dart';
@@ -25,6 +26,7 @@ class LoginPageState extends State<LoginPage> {
   bool isKeepMeLoggedIn = false;
   bool valid = false;
   Student _student;
+  final FirebaseMessaging _fcm = FirebaseMessaging();
 
 
 
@@ -249,6 +251,15 @@ class LoginPageState extends State<LoginPage> {
                 if(_student == null){
                   _showAlertDialog('Error', 'Incorrect loging details or cannot find the account.');
                 } else {
+
+                  // update device token
+
+                 _fcm.getToken().then((tk) {
+
+                   ServicesAPI.updateStudentToken(_student.id, tk);
+
+                  });
+
 
                   // check if active
                   if(_student.isActive == 1) {
