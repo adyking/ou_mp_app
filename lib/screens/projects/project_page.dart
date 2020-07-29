@@ -4,6 +4,7 @@ import 'package:ou_mp_app/models/student.dart';
 import 'package:ou_mp_app/screens/projects/project_add.dart';
 import 'package:ou_mp_app/screens/projects/project_details.dart';
 import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/utils/push_services.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:intl/intl.dart';
 
@@ -123,11 +124,13 @@ class ProjectPageState extends State<ProjectPage> {
         backgroundColor: Colors.grey[200],
         body: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+         // crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Visibility(
                       visible:  loadingProgress,

@@ -31,8 +31,9 @@ class MainScreenState extends State<MainScreen>{
   Student student;
   bool _loading = true;
   bool _showPage = false;
-  static bool _isConfigured = false;
+  //static bool _isConfigured = false;
   final FirebaseMessaging _fcm = FirebaseMessaging();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   MainScreenState({Key key, this.selectedScreen, this.studentId});
 
@@ -65,17 +66,32 @@ class MainScreenState extends State<MainScreen>{
       });
 
 
-    if (!_isConfigured) {
+   /* if (!_isConfigured) {
 
       _fcm.configure(
         onMessage: (Map<String, dynamic> message) async {
           print("onMessage: $message");
           //_showItemDialog(message);
-          String title = message['notification']['title'];
-          String body = message['notification']['body'];
-          print(title + ' ---- ' + body);
-
-
+          String title = message['data']['title'];
+          String body = message['data']['body'];
+          //print(title + ' ---- ' + body);
+//          final snackBar = SnackBar(
+//            duration: const Duration(seconds: 10),
+//            content: Text('Yay! A SnackBar!'),
+//            action: SnackBarAction(
+//
+//              label: 'Undo',
+//              onPressed: () {
+//                // Some code to undo the change.
+//              },
+//            ),
+//          );
+//
+//          // Find the Scaffold in the widget tree and use
+//          // it to show a SnackBar.
+//          Scaffold.of(scaffoldContext).showSnackBar(snackBar);
+         // _showSnackBar(snackBar);
+          _showScaffold("This is a SnackBar.");
         },
 
         onLaunch: (Map<String, dynamic> message) async {
@@ -97,14 +113,16 @@ class MainScreenState extends State<MainScreen>{
       _isConfigured = true;
     }
 
-
+*/
 
   }
 
   @override
   Widget build(BuildContext context) {
 
-  // Pages for the bottom navigation bar
+
+
+    // Pages for the bottom navigation bar
   final _screenOption = [
     Home(student: student),
     ProjectPage(student: student),
@@ -254,6 +272,12 @@ class MainScreenState extends State<MainScreen>{
           return null;
         }
     }
+  }
+
+  void _showSnackBar(SnackBar snackBar, BuildContext context) {
+
+
+
   }
 
 }

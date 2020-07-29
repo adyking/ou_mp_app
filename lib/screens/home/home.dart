@@ -7,6 +7,7 @@ import 'package:ou_mp_app/models/tasksubtask.dart';
 import 'package:ou_mp_app/screens/home/all_items_panel.dart';
 import 'package:ou_mp_app/screens/home/today_panels.dart';
 import 'package:ou_mp_app/style.dart';
+import 'package:ou_mp_app/utils/push_services.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:ou_mp_app/utils/sys_update.dart';
 import 'projects_in_progress_panel.dart';
@@ -16,6 +17,7 @@ import 'package:intl/intl.dart';
 class Home extends StatefulWidget {
 
   final Student student;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>(debugLabel:"navigator");
 
   Home({Key key, this.student}) : super(key: key);
   @override
@@ -48,6 +50,7 @@ class HomeState extends State<Home> {
   double countTodaySubtasksHours = 0.0;
 
   HomeState({Key key, this.student});
+  final PushServices pushNotifications = PushServices();
 
 
 
@@ -56,6 +59,7 @@ class HomeState extends State<Home> {
 
 
     loadData2();
+    registerNotification();
     super.initState();
   }
 
@@ -323,10 +327,10 @@ class HomeState extends State<Home> {
 
 
 
-
-
     return Scaffold(
+
       appBar: AppBar(
+
         automaticallyImplyLeading: false,
         title: Text('Dashboard', style: AppBarTheme.of(context).textTheme.title,),
         backgroundColor: AppBarBackgroundColor,
@@ -335,12 +339,17 @@ class HomeState extends State<Home> {
       backgroundColor: Colors.grey[200],
       body:  Column(
         mainAxisAlignment: MainAxisAlignment.start,
-       crossAxisAlignment: CrossAxisAlignment.stretch,
+       //crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+
+
          Expanded(
            child: SingleChildScrollView(
              child: Column(
+               crossAxisAlignment: CrossAxisAlignment.stretch,
                children: <Widget>[
+
+
                  Visibility(
                    visible:  _loading,
                    child: Column(
@@ -373,6 +382,13 @@ class HomeState extends State<Home> {
       ),
     );
   }
+
+  void registerNotification() async {
+
+    await pushNotifications.initialise();
+
+  }
+
 
 
 }

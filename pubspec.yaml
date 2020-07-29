@@ -31,6 +31,8 @@ dependencies:
   json_serializable:
   url_launcher: ^3.0.3
   firebase_messaging: ^6.0.16
+  flutter_ringtone_player: ^2.0.0
+  get_it: ^4.0.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

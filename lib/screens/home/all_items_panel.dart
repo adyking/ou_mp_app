@@ -3,6 +3,8 @@ import 'package:ou_mp_app/models/project.dart';
 import 'package:ou_mp_app/screens/logsheets/logsheet_page.dart';
 import 'package:ou_mp_app/screens/reminder/reminder_page.dart';
 import 'package:ou_mp_app/screens/tasks_subtasks/tasks_subtasks_list.dart';
+import 'package:ou_mp_app/utils/locator.dart';
+import 'package:ou_mp_app/utils/navigation_service.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:ou_mp_app/style.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +28,8 @@ class AllItemsPanelState extends State<AllItemsPanel> {
   final Project project;
 
   AllItemsPanelState({Key key, this.project}) ;
+  
+ // final NavigationService _navigationService = locator<NavigationService>();
 
   List<TaskSubtask> _overDueTasksSubtasksList = List<TaskSubtask>();
 
@@ -173,10 +177,12 @@ class AllItemsPanelState extends State<AllItemsPanel> {
                     case 3:
                       {
                         if(project!=null){
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context)
-                            => ReminderPage(project: project,)),);
+
+                          
+                         Navigator.push(
+                           context,
+                          MaterialPageRoute(builder: (context)
+                          => ReminderPage(project: project,)),);
                         }
 
                       }
