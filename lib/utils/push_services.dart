@@ -22,6 +22,35 @@ class PushServices  {
   static bool _isConfigured = false;
 
 
+  void displayNotification(String notificationType, String status) {
+
+    if (notificationType=='0') {// task schedule
+
+        if (status=='0') { // in progress tasks
+          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
+            var arr= [title,body,value, 0, 0];
+            _navigationService.navigateTo('notification_page', arguments: arr);
+          });
+        } else { // overdue tasks
+          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
+            var arr= [title,body,value, 0, 2];
+            _navigationService.navigateTo('notification_page', arguments: arr);
+          });
+
+        }
+
+    }  else { // Reminders
+      ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
+        var arr= [title,body,value, 1, 0];
+        _navigationService.navigateTo('notification_page', arguments: arr);
+      });
+
+    }
+
+
+
+
+  }
 
 
   Future initialise() async {
@@ -38,6 +67,8 @@ class PushServices  {
           title = message['data']['title'];
           body = message['data']['body'];
           projectId = message['data']['projectId'];
+          String notificationType = message['data']['notificationType'];
+          String status = message['data']['status'];
           FlutterRingtonePlayer.play(
             android: AndroidSounds.notification,
             ios: IosSounds.glass,
@@ -47,15 +78,12 @@ class PushServices  {
           );
           await new Future.delayed(const Duration(seconds : 2));
           FlutterRingtonePlayer.stop();
-          //navigatorKey.currentState.push(MaterialPageRoute(builder: (context) =>
-          //    NotificationPage(title: title,body: body,)));
+          displayNotification(notificationType, status);
 
-
-
-          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
-            var arr= [title,body,value];
-            _navigationService.navigateTo('notification_page', arguments: arr);
-          });
+//          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
+//            var arr= [title,body,value];
+//            _navigationService.navigateTo('notification_page', arguments: arr);
+//          });
 
 
         },
@@ -67,12 +95,10 @@ class PushServices  {
           body = message['data']['body'];
           projectId = message['data']['projectId'];
           print(title + ' ---- ' + body);
-          String nTitle = message['notification']['title'];
+          String notificationType = message['data']['notificationType'];
+          String status = message['data']['status'];
 
-          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
-            var arr= [title,body,value];
-            _navigationService.navigateTo('notification_page', arguments: arr);
-          });
+          displayNotification(notificationType, status);
 
 
         },
@@ -84,13 +110,10 @@ class PushServices  {
           body = message['data']['body'];
           projectId = message['data']['projectId'];
           // print(title + ' ---- ' + body);
+          String notificationType = message['data']['notificationType'];
+          String status = message['data']['status'];
 
-
-          ServicesAPI.getProjectById(int.parse(projectId)).then((value) {
-            var arr= [title,body,value];
-            _navigationService.navigateTo('notification_page', arguments: arr);
-          });
-
+          displayNotification(notificationType, status);
 
         },
       );

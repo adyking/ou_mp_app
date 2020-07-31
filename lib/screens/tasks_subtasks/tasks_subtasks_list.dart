@@ -399,15 +399,7 @@ class TasksSubtasksListState extends State<TasksSubtasksList> {
 
         backgroundColor: AppBarBackgroundColor,
 
-        actions: <Widget>[
 
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-            },
-          ),
-
-        ],
       ),
       backgroundColor: Colors.grey[200],
       body: Column(

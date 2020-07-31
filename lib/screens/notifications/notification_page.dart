@@ -9,10 +9,13 @@ class NotificationPage extends StatelessWidget {
   final String title;
   final String body;
   final Project project;
+  final int notificationType;
+  final int status;
 
 
 
-  NotificationPage({Key key, this.title, this.body, this.project}) : super(key:key);
+  NotificationPage({Key key, this.title, this.body,
+    this.project, this.notificationType, this.status}) : super(key:key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +45,8 @@ class NotificationPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  _notificationListView(context, title, body, DateTime.now(), project) ,
+                  _notificationListView(context, title, body, DateTime.now(),
+                      project, notificationType, status) ,
                         SizedBox(height: 50.0,),
 
                 ],
@@ -59,7 +63,7 @@ class NotificationPage extends StatelessWidget {
   }
 }
 Widget _notificationListView(BuildContext context, String title, String body,
-    DateTime dt, Project project) {
+    DateTime dt, Project project, int notificationType, int status) {
 
   final List<Message> messages = [];
   messages.add(Message(title: title, body: body));
@@ -119,10 +123,28 @@ Widget _notificationListView(BuildContext context, String title, String body,
                   child: ListTile(
                     // isThreeLine: true,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context)
-                        => TasksSubtasksList(project: project,view: 0,)),);
+
+                      if (notificationType==0) {
+
+                        if (status==0) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)
+                            => TasksSubtasksList(project: project,view: 0,)),);
+                        } else {
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context)
+                            => TasksSubtasksList(project: project,view: 1,)),);
+
+                        }
+
+                      } else {
+                          // do nothing
+                      }
+
+
 
                     },
                     subtitle: Padding(

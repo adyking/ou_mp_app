@@ -58,9 +58,11 @@ class MyAppState extends State<MyApp> {
               var title = arr[0];
               var body = arr[1];
               var project = arr[2];
+              var notificationType = arr[3];
+              var status = arr[4];
 
               return MaterialPageRoute(builder: (context) => NotificationPage(title: title ,
-                body: body,project: project, ));
+                body: body,project: project, notificationType: notificationType, status: status, ));
             default:
               return MaterialPageRoute(builder: (context) =>  SplashScreenPage());
           }
