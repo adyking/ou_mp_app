@@ -9,6 +9,8 @@ import 'package:ou_mp_app/style.dart';
 import 'package:ou_mp_app/utils/services_api.dart';
 import 'package:intl/intl.dart';
 
+import '../../main_screen.dart';
+
 
 
 class LogSheetPage extends StatefulWidget{
@@ -105,15 +107,7 @@ class LogSheetPageState extends State<LogSheetPage> {
 
         backgroundColor: AppBarBackgroundColor,
 
-        actions: <Widget>[
 
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-            },
-          ),
-
-        ],
       ),
       backgroundColor: Colors.grey[200],
       body: Column(
@@ -283,8 +277,27 @@ class LogSheetPageState extends State<LogSheetPage> {
             foregroundColor: Colors.white,
 
             labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
+            child: Icon(Icons.dashboard),
+            label: 'Return to Dashboard',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>
+                    MainScreen(tabIndex: 0,studentId: project.studentId,)),);
+            }
+
+        ),
+
+
+        SpeedDialChild(
+            labelBackgroundColor: Color(0xff326fb4),
+
+            backgroundColor: Color(0xff326fb4),
+            foregroundColor: Colors.white,
+
+            labelStyle: TextStyle(fontSize: 18.0, color: Colors.white),
             child: Icon(Icons.chrome_reader_mode),
-            label: 'Return to project details',
+            label: 'Project details',
             onTap: () {
               Navigator.push(
                 context,

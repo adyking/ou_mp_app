@@ -265,6 +265,55 @@ class _ReminderPageEditState extends State<ReminderPageEdit> {
       return errors;
     }
 
+    Future<void> _showAlertConfirmDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('YES'),
+                onPressed: () {
+                  //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteReminder(id).then((value) {
+
+                    if(value==1){
+                      var msg = 'Reminder has been deleted successfully!';
+                      _showAlertDialog('Info', msg);
+                    } else {
+                      var msg = 'Could not delete reminder, please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+                  // });
+                },
+              ),
+
+              FlatButton(
+                child: Text('NO'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
     return Scaffold(
       appBar:AppBar(
         title: Column(
@@ -290,10 +339,23 @@ class _ReminderPageEditState extends State<ReminderPageEdit> {
 
               if (errors == false) {
                 userHelpText = null;
-                createReminder();
+                updateReminder();
 
               }
 
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              setState(() {
+
+                var msg = 'Are you sure you want to delete this reminder?';
+                _showAlertConfirmDialog('Confirm', msg);
+                // showAlertConfirmDialog(context, _project.name);
+
+
+              });
             },
           ),
         ],
@@ -374,10 +436,20 @@ class _ReminderPageEditState extends State<ReminderPageEdit> {
               child: Text('OK'),
               onPressed: () {
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) =>
-                      ReminderPage(project: project,)),);
+                if (title=='Error') {
+
+                  Navigator.pop(context);
+
+                } else {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        ReminderPage(project: project,)),);
+                }
+
+
+
 
               },
             ),
@@ -387,7 +459,7 @@ class _ReminderPageEditState extends State<ReminderPageEdit> {
     );
   }
 
-  void createReminder() async {
+  void updateReminder() async {
     // var formatter = DateFormat('yyyy-MM-dd');
     // var formattedDate = formatter.format(sCutOffDate);
     DateTime oneDayBeforeDate = DateTime.parse('1900-01-01');
@@ -429,13 +501,23 @@ class _ReminderPageEditState extends State<ReminderPageEdit> {
     });
 
 
+    setState(() {
 
-    int lastId =  await ServicesAPI.addReminder(project.id, reminderTextController.text,
-        sCutOffDate, oneDayBeforeDate, oneWeekBeforeDate, twoWeeksBeforeDate);
+      ServicesAPI.updateReminder(id, reminderTextController.text,
+          sCutOffDate, oneDayBeforeDate, oneWeekBeforeDate, twoWeeksBeforeDate).then((value) {
 
-    if(lastId !=0) {
-      _showAlertDialog('Info', 'A new reminder has been created successfully!');
-    }
+        if(value !=0) {
+          _showAlertDialog('Info', 'Reminder has been updated successfully!');
+        } else {
+          _showAlertDialog('Error', 'Could not update reminder, '
+              'please try again.');
+
+        }
+
+
+      });
+    });
+
 
 
 

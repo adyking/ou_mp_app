@@ -249,6 +249,95 @@ class LogSheetDetailsState extends State<LogSheetDetails> {
 
     );
 
+    Future<void> _showAlertDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+
+                  if (title=='Error') {
+
+                    Navigator.pop(context);
+
+                  } else {
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          LogSheetPage(project: _project,)),);
+                  }
+
+
+
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    Future<void> _showAlertConfirmDialog(String title, String msg) async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('$title'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$msg'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('YES'),
+                onPressed: () {
+                  //  setState(() {
+
+                  Navigator.pop(context);
+                  ServicesAPI.deleteLogSheet(_logSheet.id).then((value) {
+
+                    if(value==1){
+                      var msg = 'Log sheet #' + _logSheet.id.toString() + ' has been deleted successfully!';
+                      _showAlertDialog('Info', msg);
+                    } else {
+                      var msg = 'Could not delete log sheet #' + _logSheet.id.toString() + ', please try again.';
+                      _showAlertDialog('Error', msg);
+                    }
+
+                  });
+                  // });
+                },
+              ),
+
+              FlatButton(
+                child: Text('NO'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -279,6 +368,14 @@ class LogSheetDetailsState extends State<LogSheetDetails> {
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
+              setState(() {
+
+                var msg = 'Are you sure you want to delete this log sheet?';
+                _showAlertConfirmDialog('Confirm', msg);
+                // showAlertConfirmDialog(context, _project.name);
+
+
+              });
             },
           ),
 

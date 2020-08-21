@@ -279,7 +279,19 @@ class SignUpPageAddState extends State<SignUpPageAdd> {
             userHelpText = userHelpText + '\n\n';
           }
           userHelpText = userHelpText + 'Email address field is required.';
+        } else {
+          if (!emailController.text.toLowerCase().contains('ou.ac.uk')) {
+            errors = true;
+            if (userHelpText != '') {
+              userHelpText = userHelpText + '\n\n';
+            }
+            userHelpText = userHelpText + 'Email address must be an OU email address e.g. @ou.ac.uk';
+          }
+
         }
+
+
+
 
         if (passwordController.text == '') {
           errors = true;

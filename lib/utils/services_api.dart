@@ -455,6 +455,7 @@ class ServicesAPI {
 
   }
 
+
   static Future<Project> getCurrentProjectByStudentId(int studentId) async {
     http.Client client = new http.Client();
 
@@ -1173,6 +1174,7 @@ class ServicesAPI {
         }
       }
 
+
       return tasksSubtasks;
 
     } catch (e) {
@@ -1361,6 +1363,8 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getLogSheetById.php';
   static const String logSheetUpdateUrl =
         'http://www.jteki.com/api/ou_pm/log_sheet_update.php';
+  static const String logSheetDeleteUrl =
+      'http://www.jteki.com/api/ou_pm/log_sheet_delete.php';
 
     static Future<List<LogSheet>> getLogSheetsByProjectId(int projectId) async {
 
@@ -1483,6 +1487,34 @@ class ServicesAPI {
     }
   }
 
+  static Future<int> deleteLogSheet(int id) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(logSheetDeleteUrl, body: {
+        'id': id.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var logSheetJson = json.decode(response.body);
+        print(logSheetJson);
+        int result = 0;
+
+        if (logSheetJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+      client.close();
+    }
+  }
+
 
   // Feedback
   static const String sendFeedbackUrl =
@@ -1522,6 +1554,10 @@ class ServicesAPI {
       'http://www.jteki.com/api/ou_pm/getRemindersByProjectId.php';
   static const String reminderAddUrl =
       'http://www.jteki.com/api/ou_pm/reminder_add.php';
+  static const String reminderEditUrl =
+      'http://www.jteki.com/api/ou_pm/reminder_update.php';
+  static const String reminderDeleteUrl =
+      'http://www.jteki.com/api/ou_pm/reminder_delete.php';
   static const String reminderDetailsByIdUrl =
       'http://www.jteki.com/api/ou_pm/getReminderById.php';
 
@@ -1577,6 +1613,70 @@ class ServicesAPI {
         print(reminderJson);
         var lastId = reminderJson['Response']['insertedId'];
         return lastId;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<int> updateReminder(int id, String reminderText,
+      DateTime cutOffDate, DateTime alertDate1, DateTime alertDate2,
+      DateTime alertDate3) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(reminderEditUrl, body: {
+        'id': id.toString(),
+        'reminderText': reminderText,
+        'cutOffDate': cutOffDate.toString(),
+        'alertDate1': alertDate1.toString(),
+        'alertDate2': alertDate2.toString(),
+        'alertDate3': alertDate3.toString(),
+
+      });
+
+      if (response.statusCode == 200) {
+        var reminderJson = json.decode(response.body);
+        print(reminderJson);
+        int result = 0;
+
+        if (reminderJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<int> deleteReminder(int id) async {
+
+    http.Client client = new http.Client();
+    try {
+      final response = await client.post(reminderDeleteUrl, body: {
+        'id': id.toString(),
+      });
+
+      if (response.statusCode == 200) {
+        var reminderJson = json.decode(response.body);
+        print(reminderJson);
+        int result = 0;
+
+        if (reminderJson['StatusCode'] == 200) {
+          result = 1;
+        }
+
+        return result;
       } else {
         return 0;
       }

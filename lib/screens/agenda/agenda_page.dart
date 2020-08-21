@@ -60,77 +60,56 @@ class AgendaPageState extends State<AgendaPage> {
     _project = await ServicesAPI.getCurrentProjectByStudentId(student.id);
 
 
-    _tasksSubtasksListPercentage = await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(_project.id);
-    
-    _tasksSubtasksList = await ServicesAPI.getTasksSubtasksByProjectIdAgenda(_project.id);
 
+    if(_project!=null) {
+      _tasksSubtasksListPercentage = await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(_project.id);
 
-   // _agendaTasksSubtasks = await ServicesAPI.getTasksSubtasksByProjectIdAgenda2(_project.id);
-
-
-
- /*   _tasksSubtasksList.forEach((taskSubtask) => _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = [
-
-    {
-
-      'task_id': taskSubtask.taskId,
-      'subtask_id': taskSubtask.subtaskId,
-      'task_name': taskSubtask.taskName,
-      'subtask_name': taskSubtask.subtaskName,
-      'task_time': taskSubtask.taskAllocatedHours,
-      'subtask_time': taskSubtask.subtaskAllocatedHours,
-      'taskStatus': taskSubtask.taskStatus,
-      'subtaskStatus': taskSubtask.subtaskStatus,
-      'percent': '0%',
-      'isDone': true
-
-    },
-
-    ],
-
-    );*/
+      _tasksSubtasksList = await ServicesAPI.getTasksSubtasksByProjectIdAgenda(_project.id);
 
 
 
-    _tasksSubtasksList.forEach((taskSubtask) {
+      _tasksSubtasksList.forEach((taskSubtask) {
 
-      var keyDate = taskSubtask.subtaskStartDate;
+        var keyDate = taskSubtask.subtaskStartDate;
 
-      var tasksSubtasks2List = new List();
+        var tasksSubtasks2List = new List();
 
 
-      for (var i = 0; i < _tasksSubtasksList.length; i++){
+        for (var i = 0; i < _tasksSubtasksList.length; i++){
 
-        if(keyDate== _tasksSubtasksList[i].subtaskStartDate){
+          if(keyDate== _tasksSubtasksList[i].subtaskStartDate){
 
-          var newMap = {
-            'task_id': _tasksSubtasksList[i].taskId,
-            'subtask_id': _tasksSubtasksList[i].subtaskId,
-            'task_name': _tasksSubtasksList[i].taskName,
-            'subtask_name': _tasksSubtasksList[i].subtaskName,
-            'task_time': _tasksSubtasksList[i].taskAllocatedHours,
-            'subtask_time': _tasksSubtasksList[i].subtaskAllocatedHours,
-            'taskStatus': _tasksSubtasksList[i].taskStatus,
-            'subtaskStatus': _tasksSubtasksList[i].subtaskStatus,
-            'percent': '0%',
-            'isDone': _tasksSubtasksList[i].isDone== 1 ? true : false
+            var newMap = {
+              'task_id': _tasksSubtasksList[i].taskId,
+              'subtask_id': _tasksSubtasksList[i].subtaskId,
+              'task_name': _tasksSubtasksList[i].taskName,
+              'subtask_name': _tasksSubtasksList[i].subtaskName,
+              'task_time': _tasksSubtasksList[i].taskAllocatedHours,
+              'subtask_time': _tasksSubtasksList[i].subtaskAllocatedHours,
+              'taskStatus': _tasksSubtasksList[i].taskStatus,
+              'subtaskStatus': _tasksSubtasksList[i].subtaskStatus,
+              'percent': '0%',
+              'isDone': _tasksSubtasksList[i].isDone== 1 ? true : false
 
-          };
+            };
 
-          tasksSubtasks2List.add(newMap);
+            tasksSubtasks2List.add(newMap);
+          }
+
+
         }
+
+        _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = tasksSubtasks2List;
+
+
 
 
       }
 
-      _agendaTasksSubtasks[taskSubtask.subtaskStartDate] = tasksSubtasks2List;
-
-
-
-
+      );
     }
 
-    );
+
 
 
 
@@ -235,19 +214,7 @@ class AgendaPageState extends State<AgendaPage> {
           automaticallyImplyLeading: false,
           title: Text('Agenda', style: AppBarTheme.of(context).textTheme.title,),
           backgroundColor: AppBarBackgroundColor,
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: () {
 
-                setState(() {
-
-
-                });
-              },
-            ),
-
-          ],
           centerTitle: true,
         ),
         body: SafeArea(

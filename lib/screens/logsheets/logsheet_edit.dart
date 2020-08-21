@@ -267,6 +267,7 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
       return errors;
     }
 
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -297,6 +298,7 @@ class LogSheetPageEditState extends State<LogSheetPageEdit> {
 
             },
           ),
+
         ],
       ),
       backgroundColor: Colors.grey[200],

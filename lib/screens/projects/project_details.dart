@@ -79,88 +79,110 @@ class ProjectDetailsState extends State<ProjectDetails> {
         , todayDefault, 2);
 
 
-    _tasksSubtasksList =
-          await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(projectId);
+
+    if(_project!=null) {
+
+     // _tasksSubtasksList =
+     // await ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(projectId);
 
       nInProgress = 0;
       nCompleted = 0;
       nOverdue = 0;
       int countCompleted = 0;
-      for(var i=0; i < _tasksSubtasksList.length; i++){
 
-        switch(_tasksSubtasksList[i].taskStatus) {
-          case 0 : {
-            nInProgress = nInProgress + 1;
-          }
-          break;
 
-          case 1: {
-            nCompleted = nCompleted + 1;
-            countCompleted = countCompleted + 1;
-          }
-          break;
 
-          case 2: {
-            nOverdue = nOverdue + 1;
-          }
-          break;
+      ServicesAPI.getTasksSubtasksByProjectIdWithPercentage(projectId).then((value) {
 
-          default: {
-            //
+        _tasksSubtasksList = value;
+
+        for(var i=0; i < _tasksSubtasksList.length; i++){
+
+          switch(_tasksSubtasksList[i].taskStatus) {
+            case 0 : {
+              nInProgress = nInProgress + 1;
+            }
+            break;
+
+            case 1: {
+              nCompleted = nCompleted + 1;
+              countCompleted = countCompleted + 1;
+            }
+            break;
+
+            case 2: {
+              nOverdue = nOverdue + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
           }
-          break;
+
         }
 
-      }
+        if(_tasksSubtasksList.length==countCompleted){
+          // update main project status
 
-    if(_tasksSubtasksList.length==countCompleted){
-      // update main project status
+          if(_tasksSubtasksList.length!=0) {
+            ServicesAPI.updateProjectStatus(projectId, 1).then((value) {
 
-      if(_tasksSubtasksList.length!=0) {
-        ServicesAPI.updateProjectStatus(projectId, 1).then((value) {
+            });
+          }
 
+        } else {
+
+          DateTime today = DateTime.now();
+          int status = 0;
+          int diffDays = today.difference(_project.endDate).inDays;
+
+          if (diffDays > 0) {
+            status = 2;
+
+
+          }
+
+          ServicesAPI.updateProjectStatus(projectId, status).then((value) {
+
+          });
+
+        }
+
+
+
+        int listCompleted = 0;
+        for(var i=0; i < taskSubtasksList.length; i++){
+          switch(taskSubtasksList[i].taskStatus) {
+
+            case 1: {
+              listCompleted = listCompleted + 1;
+            }
+            break;
+
+            default: {
+              //
+            }
+            break;
+          }
+        }
+
+
+        setState(() {
+
+          _currentProgress = listCompleted / _tasksSubtasksList.length;
+          var percentage = (_currentProgress * 100).round();
+          _currentProgressPercentage = percentage;
         });
-      }
 
-    } else {
-
-      DateTime today = DateTime.now();
-      int status = 0;
-      int diffDays = today.difference(_project.endDate).inDays;
-
-      if (diffDays > 0) {
-        status = 2;
-
-
-      }
-
-      ServicesAPI.updateProjectStatus(projectId, status).then((value) {
 
       });
 
+
+
     }
 
-
-
-    int listCompleted = 0;
-    for(var i=0; i < taskSubtasksList.length; i++){
-      switch(taskSubtasksList[i].taskStatus) {
-
-        case 1: {
-          listCompleted = listCompleted + 1;
-        }
-        break;
-
-        default: {
-          //
-        }
-        break;
-      }
-    }
-
-    _currentProgress = listCompleted / _tasksSubtasksList.length;
-    var percentage = (_currentProgress * 100).round();
-    _currentProgressPercentage = percentage;
 
     _student = await ServicesAPI.getStudentById(_project.studentId);
 

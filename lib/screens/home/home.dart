@@ -86,60 +86,66 @@ class HomeState extends State<Home> {
     //int diffDays = today.difference(_project.endDate).inDays;
 
     //if (diffDays > 0) {
-        await SysUpdate.updateTasksSubtasksOverdue(_project.id, DateTime.parse(formattedToday));
-        await SysUpdate.updateSubtasksOverdue(_project.id);
+
   //  }
 
     if(_project==null){
-      _loading = false;
-      _showPage = true;
+      setState(() {
+        _loading = false;
+        _showPage = true;
+      });
+
 
     } else {
 
+      await SysUpdate.updateTasksSubtasksOverdue(_project.id, DateTime.parse(formattedToday));
+      await SysUpdate.updateSubtasksOverdue(_project.id);
       DateTime todayDefault = DateTime.now();
 
-     // _tasksList = await ServicesAPI.getTasksByProjectId(_project.id);
-
-     var taskSubtasksList =
-          await ServicesAPI.getTasksSubtasksByProjectId(_project.id, todayDefault
-              , todayDefault, 2);
 
 
+//     var taskSubtasksList =
+//          await ServicesAPI.getTasksSubtasksByProjectId(_project.id, todayDefault
+//              , todayDefault, 2);
 
 
-      for(var i=0; i < taskSubtasksList.length; i++){
+     ServicesAPI.getTasksSubtasksByProjectId(_project.id, todayDefault
+         , todayDefault, 2).then((taskSubtasksList) {
+
+
+       for(var i=0; i < taskSubtasksList.length; i++){
 
 
 
 
-        //_subtasksList = await ServicesAPI.getSubtasksByTaskId(_tasksList[i].id);
+         //_subtasksList = await ServicesAPI.getSubtasksByTaskId(_tasksList[i].id);
 
-        int subtaskId = taskSubtasksList[i].subtaskId;
-        int taskId = taskSubtasksList[i].taskId;
+         int subtaskId = taskSubtasksList[i].subtaskId;
+         int taskId = taskSubtasksList[i].taskId;
 
-        if(!taskIdsList.contains(taskId)){
-          taskIdsList.add(taskId);
-        }
+         if(!taskIdsList.contains(taskId)){
+           taskIdsList.add(taskId);
+         }
 
-        if(subtaskId!=0) {
-          DateTime today = DateTime.now();
+         if(subtaskId!=0) {
+           DateTime today = DateTime.now();
 
-          var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
-          var formattedStartDate
-            = DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].subtaskStartDate);
+           var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
+           var formattedStartDate
+           = DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].subtaskStartDate);
 
-          if (formattedTodayDate==formattedStartDate){
+           if (formattedTodayDate==formattedStartDate){
 
-            if(!taskIds.contains(taskId)){
-              taskIds.add(taskId);
-            }
+             if(!taskIds.contains(taskId)){
+               taskIds.add(taskId);
+             }
 
-            countTodaySubtasks = countTodaySubtasks + 1;
-            countTodaySubtasksHours = countTodaySubtasksHours + taskSubtasksList[i].subtaskAllocatedHours;
-          }
-        }
+             countTodaySubtasks = countTodaySubtasks + 1;
+             countTodaySubtasksHours = countTodaySubtasksHours + taskSubtasksList[i].subtaskAllocatedHours;
+           }
+         }
 
-   /*     for(var s= 0; s < _subtasksList.length; s++){
+         /*     for(var s= 0; s < _subtasksList.length; s++){
 
           DateTime today = DateTime.now();
 
@@ -158,67 +164,80 @@ class HomeState extends State<Home> {
 
         }*/
 
-        DateTime today = DateTime.now();
+         DateTime today = DateTime.now();
 
-        var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
-        var formattedStartDate =
-          DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].taskStartDate);
+         var formattedTodayDate =  DateFormat('dd-MM-yyyy').format(today);
+         var formattedStartDate =
+         DateFormat('dd-MM-yyyy').format(taskSubtasksList[i].taskStartDate);
 
-        if (formattedTodayDate==formattedStartDate){
+         if (formattedTodayDate==formattedStartDate){
 
-          if(!taskIds.contains(taskId)){
-            countTodayTasks = countTodayTasks + 1;
-            taskIds.add(taskId);
-            countTodayTasksHours = countTodayTasksHours + taskSubtasksList[i].taskAllocatedHours;
-          }
-
-
-        }
+           if(!taskIds.contains(taskId)){
+             countTodayTasks = countTodayTasks + 1;
+             taskIds.add(taskId);
+             countTodayTasksHours = countTodayTasksHours + taskSubtasksList[i].taskAllocatedHours;
+           }
 
 
+         }
 
-        switch(taskSubtasksList[i].taskStatus) {
-          case 0 : {
-            nInProgress = nInProgress + 1;
-          }
-          break;
 
-          case 1: {
-            nCompleted = nCompleted + 1;
-          }
-          break;
 
-          case 2: {
-            nOverdue = nOverdue + 1;
-          }
-          break;
+         switch(taskSubtasksList[i].taskStatus) {
+           case 0 : {
+             nInProgress = nInProgress + 1;
+           }
+           break;
 
-          default: {
-            //
-          }
-          break;
-        }
+           case 1: {
+             nCompleted = nCompleted + 1;
+           }
+           break;
 
-      }
+           case 2: {
+             nOverdue = nOverdue + 1;
+           }
+           break;
+
+           default: {
+             //
+           }
+           break;
+         }
+
+       }
+
+
+
+       setState(() {
+         _currentProgress = nCompleted / taskIdsList.length;
+         var percentage = (_currentProgress * 100).round();
+         _currentProgressPercentage = percentage;
+
+
+
+         countTodayTasks = taskIds.length;
+         countTodayTasksHours = countTodayTasksHours + countTodaySubtasksHours;
+
+
+
+         if(_project!=null){
+           showCurrentProgress = true;
+         }
+       });
+
+
+     });
+
+
+
+
 
 
       int total = taskIdsList.length;
 
       setState(() {
-        _currentProgress = nCompleted / taskIdsList.length;
-        var percentage = (_currentProgress * 100).round();
-        _currentProgressPercentage = percentage;
 
-
-
-        countTodayTasks = taskIds.length;
-        countTodayTasksHours = countTodayTasksHours + countTodaySubtasksHours;
-
-
-
-        if(_project!=null){
-          showCurrentProgress = true;
-        }
         _loading = false;
         _showPage = true;
       });
