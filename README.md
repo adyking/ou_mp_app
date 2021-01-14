@@ -1,6 +1,6 @@
 # ou_mp_app
 
-OU management project application
+Open University project management application
 
 ## Getting Started
 
