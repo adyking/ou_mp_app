@@ -2,15 +2,21 @@
 
 Open University project management application
 
-## Getting Started
+## Project desciption
 
-This project is a starting point for a Flutter application.
+This project has been developed in Flutter framework (Android/iOS).
 
-A few resources to get you started if this is your first Flutter project:
+A mobile application for managing OU final projects. 
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Features:
+•	Add projects.
+•	Add tasks and subtasks to a project (project schedule).
+•	Track project progress.
+•	Record log sheets of the current project.
+•	Receive daily notifications of tasks that need to be completed.
+•	Set-up alerts to be sent before cut-off dates e.g. assigments and SAs. 
+•	Calendar view with the tasks and subtasks listed for a specific day.
+
+
+## Author: Adilson Jacinto
