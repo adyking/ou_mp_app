@@ -19,4 +19,4 @@ Features:
 •	Calendar view with the tasks and subtasks listed for a specific day.
 
 
-## Author: Adilson Jacinto
+## Adilson Jacinto
